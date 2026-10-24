@@ -1,27 +1,43 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Movie, MovieStatus, Show, ShowSeatMapResponse, ShowSeat, PriceQuote } from '@/types';
 import { apiClient } from '@/lib/api-client';
 import { Header } from '@/components/Header';
+import { NaturalLanguageSearch } from '@/components/NaturalLanguageSearch';
+import { ParsedMovieQuery } from '@/lib/query-parser';
+import {
+  UserPreferences,
+  getStoredPreferences,
+  rankMoviesByPreferences,
+} from '@/lib/preferences';
+import { UserPreferencesModal } from '@/components/UserPreferencesModal';
+import { RecommendedSection } from '@/components/RecommendedSection';
 import { MovieFilterBar } from '@/components/MovieFilterBar';
 import { MovieGrid } from '@/components/MovieGrid';
 import { MovieDetailModal } from '@/components/MovieDetailModal';
-import { VoiceAssistantBanner } from '@/components/VoiceAssistantBanner';
 import { SeatMap } from '@/components/SeatMap';
 import { CheckoutModal } from '@/components/CheckoutModal';
+import { useToast } from '@/lib/toast';
+import { TicketIcon, XIcon } from '@/components/icons';
 
 export default function HomePage() {
+  const toast = useToast();
   const [movies, setMovies] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Filters state
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  // City and Preferences state
   const [selectedCity, setSelectedCity] = useState<string>('Bengaluru');
+  const [preferences, setPreferences] = useState<UserPreferences>(() => getStoredPreferences());
+  const [isPreferencesOpen, setIsPreferencesOpen] = useState<boolean>(false);
+
+  // Filter state
   const [statusFilter, setStatusFilter] = useState<MovieStatus | 'all'>('now_showing');
   const [selectedLanguage, setSelectedLanguage] = useState<string>('All');
   const [selectedGenre, setSelectedGenre] = useState<string>('All');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [partySize, setPartySize] = useState<number>(2);
 
   // Modal & Booking Flow states
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
@@ -40,6 +56,8 @@ export default function HomePage() {
 
   // Success toast state
   const [confirmedNotification, setConfirmedNotification] = useState<string | null>(null);
+
+  const heroSearchRef = useRef<HTMLDivElement>(null);
 
   // Fetch movies via apiClient
   useEffect(() => {
@@ -76,64 +94,92 @@ export default function HomePage() {
     setRefreshIndex((prev) => prev + 1);
   }, []);
 
-  // Handle voice command simulation from banner
-  const handleVoiceCommand = (command: string) => {
-    if (command.toLowerCase().includes('action')) {
-      setSelectedGenre('Action');
-    } else if (command.toLowerCase().includes('telugu')) {
-      setSelectedLanguage('Telugu');
-    } else if (command.toLowerCase().includes('hindi')) {
-      setSelectedLanguage('Hindi');
-    } else if (command.toLowerCase().includes('kalki')) {
-      setSearchQuery('Kalki');
-    } else if (command.toLowerCase().includes('best rated')) {
-      setMovies((prev) => [...prev].sort((a, b) => (b.rating || 0) - (a.rating || 0)));
+  // Natural Language Search Callback
+  const handleParsedQueryChange = useCallback((parsed: ParsedMovieQuery) => {
+    if (parsed.movieTitle) {
+      setSearchQuery(parsed.movieTitle);
+    } else if (parsed.rawQuery) {
+      setSearchQuery(parsed.rawQuery);
     } else {
-      setSearchQuery(command);
+      setSearchQuery('');
     }
-  };
+
+    if (parsed.language) {
+      setSelectedLanguage(parsed.language);
+    }
+
+    if (parsed.genre) {
+      setSelectedGenre(parsed.genre);
+    }
+
+    if (parsed.partySize) {
+      setPartySize(parsed.partySize);
+    }
+  }, []);
+
+  const handleClearQuery = useCallback(() => {
+    setSearchQuery('');
+    setSelectedLanguage('All');
+    setSelectedGenre('All');
+  }, []);
 
   const handleResetFilters = () => {
     setSearchQuery('');
     setStatusFilter('all');
     setSelectedLanguage('All');
     setSelectedGenre('All');
+    toast.info('Catalogue filters have been reset.');
   };
 
+  // Compute recommendations based on preferences and loaded movies
+  const recommendations = useMemo(() => {
+    if (movies.length === 0) return [];
+    return rankMoviesByPreferences(movies, preferences);
+  }, [movies, preferences]);
+
   // Called when user selects a showtime from MovieDetailModal
-  const handleSelectShowtime = (_movie: Movie, show: Show) => {
+  const handleSelectShowtime = (_movie: Movie, show: Show, selectedPartySize?: number) => {
+    if (selectedPartySize) {
+      setPartySize(selectedPartySize);
+    }
     setSelectedMovie(null);
     setActiveShow(show);
   };
 
+  const scrollToHeroSearch = () => {
+    if (heroSearchRef.current) {
+      heroSearchRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const input = heroSearchRef.current.querySelector('input');
+      input?.focus();
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans selection:bg-rose-600 selection:text-white">
-      {/* Global Navigation Header */}
+    <div className="min-h-screen bg-app-bg text-text-primary flex flex-col font-sans selection:bg-brand selection:text-white transition-colors">
+      {/* Global Navigation Header with Integrated Theme Toggle */}
       <Header
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
         selectedCity={selectedCity}
         onCityChange={setSelectedCity}
-        onVoiceClick={() => {
-          setSearchQuery('Kalki');
-        }}
+        onVoiceClick={scrollToHeroSearch}
+        onPreferencesClick={() => setIsPreferencesOpen(true)}
       />
 
       {/* Main Content Area */}
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
         {/* Success Booking Alert Banner */}
         {confirmedNotification && (
-          <div className="mb-6 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-emerald-300 flex items-center justify-between">
+          <div className="mb-6 rounded-2xl border border-border-subtle bg-selected p-4 text-brand flex items-center justify-between shadow-xs animate-in fade-in">
             <div className="flex items-center gap-3">
-              <span className="text-xl">🎟️</span>
-              <span className="text-sm font-semibold">{confirmedNotification}</span>
+              <TicketIcon className="h-5 w-5 text-brand shrink-0" />
+              <span className="text-sm font-semibold text-text-primary">{confirmedNotification}</span>
             </div>
             <button
               type="button"
               onClick={() => setConfirmedNotification(null)}
-              className="text-emerald-400 hover:text-white font-bold ml-4"
+              className="text-text-secondary hover:text-brand p-1"
+              aria-label="Dismiss alert"
             >
-              ✕
+              <XIcon className="h-4 w-4" />
             </button>
           </div>
         )}
@@ -143,7 +189,11 @@ export default function HomePage() {
           <section className="animate-in fade-in duration-300">
             <SeatMap
               show={activeShow}
+              initialTicketCount={partySize}
               onBack={() => setActiveShow(null)}
+              onSwitchShow={(newShow) => {
+                setActiveShow(newShow);
+              }}
               onProceedToCheckout={(data) => {
                 setCheckoutData(data);
               }}
@@ -151,62 +201,72 @@ export default function HomePage() {
           </section>
         ) : (
           <>
-            {/* Voice Assistant Showcase Banner */}
-            <VoiceAssistantBanner onSampleVoiceCommand={handleVoiceCommand} />
-
-            {/* Hero Section */}
-            <section className="mb-6 rounded-3xl border border-zinc-800 bg-gradient-to-br from-zinc-900/90 via-zinc-900/40 to-zinc-950 p-6 sm:p-8">
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                <div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-400">
-                    <span>⚡ Bolna Symphony Buildathon Prototype</span>
-                  </div>
-                  <h1 className="mt-3 text-3xl sm:text-4xl font-black tracking-tight text-white">
-                    Book Movies at the <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-amber-400 to-amber-200">Speed of Voice</span>
-                  </h1>
-                  <p className="mt-2 text-sm sm:text-base text-zinc-400 max-w-2xl leading-relaxed">
-                    Discover blockbusters across India in Telugu, Hindi, Tamil, Kannada, and Malayalam. Select verified showtimes, explore real-time interactive seat availability, and simulate demo checkout.
-                  </p>
+            {/* Compact, Confident Hero Section */}
+            <section
+              ref={heroSearchRef}
+              className="relative mb-6 overflow-hidden rounded-3xl border border-border-subtle bg-surface p-6 sm:p-8 shadow-sm transition-colors"
+            >
+              <div className="max-w-3xl">
+                <div className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-surface-elevated px-3 py-1 text-xs font-bold text-brand">
+                  <span className="h-1.5 w-1.5 rounded-full bg-brand animate-pulse" />
+                  <span>Voice-First Cinema Ticketing Prototype</span>
                 </div>
+                <h1 className="mt-3 text-2xl sm:text-4xl font-black tracking-tight text-text-primary">
+                  Discover and Book Movies at the <span className="text-brand">Speed of Voice</span>
+                </h1>
+                <p className="mt-2 text-xs sm:text-sm text-text-secondary leading-relaxed">
+                  Experience natural conversational ticketing for Indian cinemas. Search naturally by language, genre, or showtime, reserve seats on real-time interactive layouts, and simulate instant booking.
+                </p>
+              </div>
 
-                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-4 text-center min-w-[140px]">
-                    <span className="block text-2xl font-black text-rose-500">20</span>
-                    <span className="text-xs text-zinc-400 font-medium">Tickets / Booking Max</span>
-                  </div>
-                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-4 text-center min-w-[140px]">
-                    <span className="block text-2xl font-black text-amber-400">₹5</span>
-                    <span className="text-xs text-zinc-400 font-medium">Fee (Capped at ₹30)</span>
-                  </div>
-                </div>
+              {/* Natural Language & Voice Search Bar */}
+              <div className="mt-5">
+                <NaturalLanguageSearch
+                  onParsedQueryChange={handleParsedQueryChange}
+                  activeQuery={searchQuery}
+                  onClearQuery={handleClearQuery}
+                />
               </div>
             </section>
 
-            {/* Filter Controls Bar */}
-            <section aria-label="Movie filters">
-              <MovieFilterBar
-                statusFilter={statusFilter}
-                onStatusChange={setStatusFilter}
-                selectedLanguage={selectedLanguage}
-                onLanguageChange={setSelectedLanguage}
-                selectedGenre={selectedGenre}
-                onGenreChange={setSelectedGenre}
-                totalResults={movies.length}
-                onResetFilters={handleResetFilters}
-              />
-            </section>
-
-            {/* Dynamic Movie Grid */}
-            <section aria-label="Movie catalogue" className="mt-4">
-              <MovieGrid
-                movies={movies}
-                isLoading={isLoading}
-                error={errorMessage}
-                onRetry={handleRetry}
+            {/* Transparent Preference-Aware Recommended Rail */}
+            {!searchQuery && (
+              <RecommendedSection
+                recommendations={recommendations}
+                preferences={preferences}
+                onOpenPreferences={() => setIsPreferencesOpen(true)}
                 onSelectMovie={(movie) => setSelectedMovie(movie)}
-                onResetFilters={handleResetFilters}
               />
-            </section>
+            )}
+
+            {/* Curated Movies Section */}
+            <div id="movies-section" className="scroll-mt-20">
+              {/* Filter Controls Bar */}
+              <section aria-label="Movie filters">
+                <MovieFilterBar
+                  statusFilter={statusFilter}
+                  onStatusChange={setStatusFilter}
+                  selectedLanguage={selectedLanguage}
+                  onLanguageChange={setSelectedLanguage}
+                  selectedGenre={selectedGenre}
+                  onGenreChange={setSelectedGenre}
+                  totalResults={movies.length}
+                  onResetFilters={handleResetFilters}
+                />
+              </section>
+
+              {/* Dynamic Movie Grid */}
+              <section aria-label="Movie catalogue" className="mt-4">
+                <MovieGrid
+                  movies={movies}
+                  isLoading={isLoading}
+                  error={errorMessage}
+                  onRetry={handleRetry}
+                  onSelectMovie={(movie) => setSelectedMovie(movie)}
+                  onResetFilters={handleResetFilters}
+                />
+              </section>
+            </div>
           </>
         )}
       </main>
@@ -215,6 +275,7 @@ export default function HomePage() {
       <MovieDetailModal
         movie={selectedMovie}
         selectedCity={selectedCity}
+        initialPartySize={partySize}
         onClose={() => setSelectedMovie(null)}
         onSelectShowtime={handleSelectShowtime}
       />
@@ -235,17 +296,27 @@ export default function HomePage() {
         />
       )}
 
-      {/* Footer */}
-      <footer className="mt-16 border-t border-zinc-900 bg-zinc-950 py-8 text-center text-xs text-zinc-500">
+      {/* User Preferences Modal */}
+      <UserPreferencesModal
+        isOpen={isPreferencesOpen}
+        currentPreferences={preferences}
+        onClose={() => setIsPreferencesOpen(false)}
+        onSave={(updated) => setPreferences(updated)}
+      />
+
+      {/* Minimal, Professional Footer */}
+      <footer className="mt-16 border-t border-border-subtle bg-surface py-8 text-xs text-text-secondary transition-colors">
         <div className="mx-auto max-w-7xl px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-zinc-300">CineSuno</span>
-            <span>•</span>
-            <span>Voice-First Movie Ticketing Prototype</span>
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+            <span className="font-bold text-text-primary">CineSuno</span>
+            <span className="hidden sm:inline">•</span>
+            <span>Indian Cinema Ticketing in {selectedCity}</span>
+            <span className="hidden sm:inline">•</span>
+            <span>Monochromatic Green (#356B62)</span>
           </div>
-          <p className="text-zinc-600">
-            Built for Bolna Symphony Buildathon. Unified web and voice ticketing engine.
-          </p>
+          <div className="text-center sm:text-right text-[11px] text-text-secondary">
+            Demonstration prototype for Bolna Symphony Buildathon. All payments & seat locks are simulated.
+          </div>
         </div>
       </footer>
     </div>

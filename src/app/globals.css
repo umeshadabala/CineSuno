@@ -1,26 +1,124 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   CineSuno Monochromatic Green Design System
+   Core Brand Accent: #356B62
+   ========================================================================== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Default Light Theme Tokens */
+  --brand-accent: #356B62;
+  --brand-hover: #28574F;
+  --app-bg: #F5F7F6;
+  --surface: #FFFFFF;
+  --surface-elevated: #EAF0ED;
+  --text-primary: #1B2925;
+  --text-secondary: #53645E;
+  --border: #D5DFDA;
+  --selected-state: #DDE9E5;
+  --focus-ring: #356B62;
+
+  /* Monochromatic Tonal Helpers */
+  --brand-muted: #E2ECE8;
+  --brand-glow: rgba(53, 107, 98, 0.25);
+
+  color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
+/* System Preference Dark Mode (when not explicitly overridden to light) */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme="light"]) {
+    --brand-accent: #83B5A8;
+    --brand-hover: #A0C9BE;
+    --app-bg: #111917;
+    --surface: #1B2522;
+    --surface-elevated: #24312C;
+    --text-primary: #E4EFEB;
+    --text-secondary: #B1C2BC;
+    --border: #354740;
+    --selected-state: #293A34;
+    --focus-ring: #A0C9BE;
+
+    --brand-muted: #1A2E28;
+    --brand-glow: rgba(131, 181, 168, 0.2);
+
+    color-scheme: dark;
   }
 }
 
+/* Explicit Dark Theme Override */
+[data-theme="dark"] {
+  --brand-accent: #83B5A8;
+  --brand-hover: #A0C9BE;
+  --app-bg: #111917;
+  --surface: #1B2522;
+  --surface-elevated: #24312C;
+  --text-primary: #E4EFEB;
+  --text-secondary: #B1C2BC;
+  --border: #354740;
+  --selected-state: #293A34;
+  --focus-ring: #A0C9BE;
+
+  --brand-muted: #1A2E28;
+  --brand-glow: rgba(131, 181, 168, 0.2);
+
+  color-scheme: dark;
+}
+
+/* Explicit Light Theme Override */
+[data-theme="light"] {
+  --brand-accent: #356B62;
+  --brand-hover: #28574F;
+  --app-bg: #F5F7F6;
+  --surface: #FFFFFF;
+  --surface-elevated: #EAF0ED;
+  --text-primary: #1B2925;
+  --text-secondary: #53645E;
+  --border: #D5DFDA;
+  --selected-state: #DDE9E5;
+  --focus-ring: #356B62;
+
+  --brand-muted: #E2ECE8;
+  --brand-glow: rgba(53, 107, 98, 0.25);
+
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-brand: var(--brand-accent);
+  --color-brand-hover: var(--brand-hover);
+  --color-app-bg: var(--app-bg);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-border-subtle: var(--border);
+  --color-selected: var(--selected-state);
+  --color-focus: var(--focus-ring);
+  --color-brand-muted: var(--brand-muted);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--app-bg);
+  color: var(--text-primary);
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Accessible focus ring */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
