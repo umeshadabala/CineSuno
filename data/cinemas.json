@@ -1,0 +1,37 @@
+[
+  {
+    "id": "cin-01",
+    "name": "PVR Forum Mall, Koramangala",
+    "address": "21, Hosur Road, Koramangala",
+    "city": "Bengaluru",
+    "facilities": ["IMAX", "Dolby Atmos", "Recliner Seats", "Food Court", "Parking"]
+  },
+  {
+    "id": "cin-02",
+    "name": "INOX Megaplex, Inorbit Mall",
+    "address": "Mindspace, Link Road, Malad West",
+    "city": "Mumbai",
+    "facilities": ["IMAX", "Insignia Luxe", "Dolby Atmos", "Valet Parking"]
+  },
+  {
+    "id": "cin-03",
+    "name": "PVR Director's Cut, Ambience Mall",
+    "address": "Nelson Mandela Road, Vasant Kunj",
+    "city": "Delhi",
+    "facilities": ["Luxury Recliners", "Gourmet Dining", "Dolby Atmos", "Concierge"]
+  },
+  {
+    "id": "cin-04",
+    "name": "Prasads Multiplex",
+    "address": "NTR Marg, Central Secretariat",
+    "city": "Hyderabad",
+    "facilities": ["Large Screen", "4K Laser Projection", "Dolby 7.1", "Food Court"]
+  },
+  {
+    "id": "cin-05",
+    "name": "Cinepolis Nexus Shantiniketan",
+    "address": "Whitefield Main Road, Hoodi",
+    "city": "Bengaluru",
+    "facilities": ["VIP Recliners", "Dolby Atmos", "RealD 3D", "Coffee Lounge"]
+  }
+]

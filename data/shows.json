@@ -1,0 +1,134 @@
+[
+  {
+    "id": "show-101",
+    "movieId": "mov-01",
+    "cinemaId": "cin-01",
+    "startTime": "2026-10-24T14:30:00+05:30",
+    "ticketPricePaise": 25000,
+    "status": "filling_fast",
+    "screenName": "Screen 1",
+    "format": "2D",
+    "language": "Hindi"
+  },
+  {
+    "id": "show-102",
+    "movieId": "mov-01",
+    "cinemaId": "cin-01",
+    "startTime": "2026-10-24T18:30:00+05:30",
+    "ticketPricePaise": 32000,
+    "status": "scheduled",
+    "screenName": "IMAX Audi 2",
+    "format": "IMAX 2D",
+    "language": "Telugu"
+  },
+  {
+    "id": "show-103",
+    "movieId": "mov-01",
+    "cinemaId": "cin-01",
+    "startTime": "2026-10-25T19:00:00+05:30",
+    "ticketPricePaise": 32000,
+    "status": "scheduled",
+    "screenName": "IMAX Audi 2",
+    "format": "IMAX 2D",
+    "language": "Telugu"
+  },
+  {
+    "id": "show-104",
+    "movieId": "mov-01",
+    "cinemaId": "cin-02",
+    "startTime": "2026-10-25T18:30:00+05:30",
+    "ticketPricePaise": 28000,
+    "status": "scheduled",
+    "screenName": "Insignia Screen 1",
+    "format": "2D",
+    "language": "Hindi"
+  },
+  {
+    "id": "show-105",
+    "movieId": "mov-02",
+    "cinemaId": "cin-01",
+    "startTime": "2026-10-24T16:00:00+05:30",
+    "ticketPricePaise": 22000,
+    "status": "scheduled",
+    "screenName": "Screen 3",
+    "format": "2D",
+    "language": "Hindi"
+  },
+  {
+    "id": "show-106",
+    "movieId": "mov-02",
+    "cinemaId": "cin-02",
+    "startTime": "2026-10-25T21:15:00+05:30",
+    "ticketPricePaise": 24000,
+    "status": "filling_fast",
+    "screenName": "Screen 2",
+    "format": "2D",
+    "language": "Hindi"
+  },
+  {
+    "id": "show-107",
+    "movieId": "mov-02",
+    "cinemaId": "cin-03",
+    "startTime": "2026-10-25T17:45:00+05:30",
+    "ticketPricePaise": 35000,
+    "status": "scheduled",
+    "screenName": "Audi 1",
+    "format": "2D",
+    "language": "Hindi"
+  },
+  {
+    "id": "show-108",
+    "movieId": "mov-03",
+    "cinemaId": "cin-04",
+    "startTime": "2026-10-25T19:30:00+05:30",
+    "ticketPricePaise": 30000,
+    "status": "scheduled",
+    "screenName": "Screen 1 Large",
+    "format": "2D",
+    "language": "Telugu"
+  },
+  {
+    "id": "show-109",
+    "movieId": "mov-03",
+    "cinemaId": "cin-01",
+    "startTime": "2026-10-25T21:30:00+05:30",
+    "ticketPricePaise": 28000,
+    "status": "filling_fast",
+    "screenName": "Screen 4",
+    "format": "2D",
+    "language": "Hindi"
+  },
+  {
+    "id": "show-110",
+    "movieId": "mov-04",
+    "cinemaId": "cin-01",
+    "startTime": "2026-10-25T20:15:00+05:30",
+    "ticketPricePaise": 45000,
+    "status": "filling_fast",
+    "screenName": "IMAX Audi 2",
+    "format": "IMAX 2D",
+    "language": "English"
+  },
+  {
+    "id": "show-111",
+    "movieId": "mov-04",
+    "cinemaId": "cin-04",
+    "startTime": "2026-10-26T18:00:00+05:30",
+    "ticketPricePaise": 35000,
+    "status": "scheduled",
+    "screenName": "Screen 1 Large",
+    "format": "2D",
+    "language": "English"
+  },
+  {
+    "id": "show-112",
+    "movieId": "mov-05",
+    "cinemaId": "cin-05",
+    "startTime": "2026-10-25T15:00:00+05:30",
+    "ticketPricePaise": 26000,
+    "status": "scheduled",
+    "screenName": "Screen 2",
+    "format": "2D",
+    "language": "Telugu"
+  }
+]
