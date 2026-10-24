@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useTheme, Theme } from '@/lib/theme-provider';
+import { SunIcon, MoonIcon, MonitorIcon, ChevronDownIcon, CheckIcon } from '@/components/icons';
 
 export function ThemeToggle() {
   const { theme, resolvedTheme, setTheme } = useTheme();
@@ -23,13 +24,20 @@ export function ThemeToggle() {
     };
   }, [isOpen]);
 
-  const options: Array<{ value: Theme; label: string; icon: string }> = [
-    { value: 'light', label: 'Light', icon: '☀️' },
-    { value: 'dark', label: 'Dark', icon: '🌙' },
-    { value: 'system', label: `System (${resolvedTheme === 'dark' ? 'Dark' : 'Light'})`, icon: '💻' },
+  const options: Array<{ value: Theme; label: string; icon: React.ReactNode }> = [
+    { value: 'light', label: 'Light', icon: <SunIcon className="w-3.5 h-3.5" /> },
+    { value: 'dark', label: 'Dark', icon: <MoonIcon className="w-3.5 h-3.5" /> },
+    { value: 'system', label: `System (${resolvedTheme === 'dark' ? 'Dark' : 'Light'})`, icon: <MonitorIcon className="w-3.5 h-3.5" /> },
   ];
 
-  const currentIcon = theme === 'system' ? '💻' : resolvedTheme === 'dark' ? '🌙' : '☀️';
+  const currentIcon =
+    theme === 'system' ? (
+      <MonitorIcon className="w-3.5 h-3.5" />
+    ) : resolvedTheme === 'dark' ? (
+      <MoonIcon className="w-3.5 h-3.5" />
+    ) : (
+      <SunIcon className="w-3.5 h-3.5" />
+    );
 
   return (
     <div className="relative inline-block text-left" ref={dropdownRef}>
@@ -39,25 +47,22 @@ export function ThemeToggle() {
         aria-label={`Select color theme. Current theme: ${theme} (${resolvedTheme})`}
         aria-haspopup="true"
         aria-expanded={isOpen}
-        className="flex h-9 items-center gap-1.5 rounded-xl border border-border-subtle bg-surface px-2.5 py-1.5 text-xs font-semibold text-text-primary shadow-sm transition hover:bg-surface-elevated focus:outline-none focus:ring-2 focus:ring-brand"
+        className="flex h-9 items-center gap-2 rounded-xl border border-border-subtle bg-surface px-2.5 py-1.5 text-xs font-semibold text-text-primary shadow-2xs transition hover:bg-surface-elevated hover:border-brand/50 focus:outline-none focus:ring-2 focus:ring-brand"
       >
-        <span aria-hidden="true" className="text-sm">{currentIcon}</span>
+        <span aria-hidden="true" className="text-brand flex items-center justify-center">
+          {currentIcon}
+        </span>
         <span className="capitalize hidden sm:inline">{theme}</span>
-        <svg
-          className={`h-3.5 w-3.5 text-text-secondary transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-        </svg>
+        <ChevronDownIcon
+          className={`w-3 h-3 text-text-secondary transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+        />
       </button>
 
       {isOpen && (
         <div
           role="menu"
           aria-orientation="vertical"
-          className="absolute right-0 mt-2 w-44 origin-top-right rounded-2xl border border-border-subtle bg-surface p-1.5 shadow-xl shadow-black/20 backdrop-blur-xl z-50 focus:outline-none animate-in fade-in zoom-in-95 duration-150"
+          className="absolute right-0 mt-2 w-44 origin-top-right rounded-2xl border border-border-subtle bg-surface p-1.5 shadow-xl shadow-black/15 backdrop-blur-xl z-50 focus:outline-none animate-in fade-in zoom-in-95 duration-100"
         >
           {options.map((opt) => {
             const isSelected = theme === opt.value;
@@ -70,21 +75,17 @@ export function ThemeToggle() {
                   setTheme(opt.value);
                   setIsOpen(false);
                 }}
-                className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-medium transition ${
+                className={`flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs font-medium transition ${
                   isSelected
                     ? 'bg-selected text-brand font-bold'
                     : 'text-text-primary hover:bg-surface-elevated'
                 }`}
               >
                 <span className="flex items-center gap-2">
-                  <span aria-hidden="true">{opt.icon}</span>
+                  <span className={isSelected ? 'text-brand' : 'text-text-secondary'}>{opt.icon}</span>
                   <span>{opt.label}</span>
                 </span>
-                {isSelected && (
-                  <svg className="h-3.5 w-3.5 text-brand" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                )}
+                {isSelected && <CheckIcon className="w-3.5 h-3.5 text-brand" />}
               </button>
             );
           })}

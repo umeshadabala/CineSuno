@@ -9,9 +9,37 @@ import {
   SeatRecommendationResult,
 } from '@/types';
 import { apiClient } from '@/lib/api-client';
+import { TicketQuantitySelector } from '@/components/ui/TicketQuantitySelector';
+import {
+  SparklesIcon,
+  XIcon,
+  ChevronLeftIcon,
+  AlertCircleIcon,
+  InfoIcon,
+  RefreshCwIcon,
+} from '@/components/icons';
+import { findAlternativeShows, AlternativeShowSuggestion } from '@/lib/alternative-finder';
+import { getStoredPreferences } from '@/lib/preferences';
+import { AlternativeShowFinder } from '@/components/AlternativeShowFinder';
+import { useToast } from '@/lib/toast';
+import dynamic from 'next/dynamic';
+import GroupSplitDrawer from '@/components/GroupSplitDrawer';
+
+const Auditorium3D = dynamic(() => import('@/components/auditorium/Auditorium3D'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-[480px] w-full items-center justify-center rounded-3xl border border-border-subtle bg-[#0c1311] text-xs text-text-secondary">
+      <div className="flex flex-col items-center gap-2">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand border-t-transparent" />
+        <span>Initializing WebGL 3D Auditorium...</span>
+      </div>
+    </div>
+  ),
+});
 
 interface SeatMapProps {
   show: Show;
+  initialTicketCount?: number;
   onBack: () => void;
   onProceedToCheckout: (data: {
     show: Show;
@@ -19,15 +47,23 @@ interface SeatMapProps {
     selectedSeats: ShowSeat[];
     quote: PriceQuote;
   }) => void;
+  onSwitchShow?: (newShow: Show) => void;
 }
 
-export function SeatMap({ show, onBack, onProceedToCheckout }: SeatMapProps) {
+export function SeatMap({
+  show,
+  initialTicketCount = 2,
+  onBack,
+  onProceedToCheckout,
+  onSwitchShow,
+}: SeatMapProps) {
+  const toast = useToast();
   const [seatMapData, setSeatMapData] = useState<ShowSeatMapResponse | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // User target ticket count (1 to 6 by quick pills, up to 20 maximum)
-  const [ticketCount, setTicketCount] = useState<number>(2);
+  // User target ticket count (1 to 20)
+  const [ticketCount, setTicketCount] = useState<number>(initialTicketCount);
   const [selectedSeatIds, setSelectedSeatIds] = useState<string[]>([]);
   const [quote, setQuote] = useState<PriceQuote | null>(null);
   const [isQuoteLoading, setIsQuoteLoading] = useState<boolean>(false);
@@ -37,6 +73,55 @@ export function SeatMap({ show, onBack, onProceedToCheckout }: SeatMapProps) {
   const [recommendation, setRecommendation] = useState<SeatRecommendationResult | null>(null);
   const [recommendationMessage, setRecommendationMessage] = useState<string | null>(null);
   const [refreshIndex, setRefreshIndex] = useState<number>(0);
+  const [viewMode, setViewMode] = useState<'3d' | '2d'>('3d');
+  const [isGroupSplitOpen, setIsGroupSplitOpen] = useState<boolean>(false);
+
+  // Alternative show state
+  const [showAlternatives, setShowAlternatives] = useState<boolean>(false);
+  const [alternatives, setAlternatives] = useState<AlternativeShowSuggestion[]>([]);
+  const [isLoadingAlternatives, setIsLoadingAlternatives] = useState<boolean>(false);
+
+  const handleOpenAlternatives = async () => {
+    if (showAlternatives) {
+      setShowAlternatives(false);
+      return;
+    }
+    setIsLoadingAlternatives(true);
+    try {
+      const res = await apiClient.getShows({ movieId: show.movieId });
+      if (res.success) {
+        const found = findAlternativeShows(show, res.data, [], getStoredPreferences(), ticketCount);
+        setAlternatives(found);
+      }
+    } catch {
+      // Ignore
+    } finally {
+      setIsLoadingAlternatives(false);
+      setShowAlternatives(true);
+    }
+  };
+
+  const handleSelectAlternative = (newShow: Show) => {
+    setShowAlternatives(false);
+    setSelectedSeatIds([]);
+    setQuote(null);
+    setRecommendationMessage(null);
+    if (onSwitchShow) {
+      onSwitchShow(newShow);
+      const timeStr = new Date(newShow.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      toast.info(`Switched to show at ${timeStr}`);
+    }
+  };
+
+  const handleTicketCountChange = useCallback((newCount: number) => {
+    setTicketCount(newCount);
+    setSelectedSeatIds((prev) => {
+      if (prev.length > newCount) {
+        return prev.slice(0, newCount);
+      }
+      return prev;
+    });
+  }, []);
 
   // Fetch show seat map
   useEffect(() => {
@@ -161,7 +246,7 @@ export function SeatMap({ show, onBack, onProceedToCheckout }: SeatMapProps) {
         setRecommendation(res.data);
         setSelectedSeatIds(res.data.recommendedSeatIds);
         setRecommendationMessage(
-          `✨ CineSuno AI selected ${res.data.recommendedSeatIds.length} prime seats (${res.data.score}/100 match): ${res.data.explanation}`
+          `CineSuno AI selected ${res.data.recommendedSeatIds.length} prime seats (${res.data.score}/100 match): ${res.data.explanation}`
         );
       } else {
         setRecommendationMessage(res.error.message || 'No recommendation available for current criteria.');
@@ -173,19 +258,19 @@ export function SeatMap({ show, onBack, onProceedToCheckout }: SeatMapProps) {
     }
   };
 
-  // Group seats by Category and Row for clear sectioning
+  // Group seats by Category and Row for clear sectioning (Standard front, Premium middle, Recliner back)
   const categorizedRows = useMemo(() => {
     if (!seatMapData) return [];
 
     const categories: Array<{
-      category: 'recliner' | 'premium' | 'standard';
+      category: 'standard' | 'premium' | 'recliner';
       label: string;
       pricePaise: number;
       rows: Array<{ rowName: string; seats: ShowSeat[] }>;
     }> = [
-      { category: 'recliner', label: 'Recliner Luxury', pricePaise: 0, rows: [] },
-      { category: 'premium', label: 'Prime Premium', pricePaise: 0, rows: [] },
       { category: 'standard', label: 'Classic Standard', pricePaise: 0, rows: [] },
+      { category: 'premium', label: 'Prime Premium', pricePaise: 0, rows: [] },
+      { category: 'recliner', label: 'Recliner Luxury', pricePaise: 0, rows: [] },
     ];
 
     const rowMap = new Map<string, ShowSeat[]>();
@@ -204,12 +289,12 @@ export function SeatMap({ show, onBack, onProceedToCheckout }: SeatMapProps) {
       }
     });
 
-    // Filter out empty categories and sort rows
+    // Filter out empty categories and sort rows front-to-back (Row A closest to screen, down to Row F at back)
     return categories
       .filter((c) => c.rows.length > 0)
       .map((c) => ({
         ...c,
-        rows: c.rows.sort((a, b) => b.rowName.localeCompare(a.rowName)), // Back to front (F down to A)
+        rows: c.rows.sort((a, b) => a.rowName.localeCompare(b.rowName)),
       }));
   }, [seatMapData, show.ticketPricePaise]);
 
@@ -231,9 +316,7 @@ export function SeatMap({ show, onBack, onProceedToCheckout }: SeatMapProps) {
     return (
       <div className="rounded-3xl border border-border-subtle bg-surface p-8 text-center max-w-lg mx-auto shadow-sm">
         <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-surface-elevated text-brand mb-3">
-          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
+          <AlertCircleIcon className="h-6 w-6" />
         </div>
         <h3 className="text-lg font-bold text-text-primary">Seat Availability Unavailable</h3>
         <p className="mt-1 text-sm text-text-secondary">{errorMessage || 'Could not load show seat map.'}</p>
@@ -270,9 +353,7 @@ export function SeatMap({ show, onBack, onProceedToCheckout }: SeatMapProps) {
             className="rounded-xl border border-border-subtle bg-surface-elevated p-2 text-text-secondary hover:text-text-primary hover:border-brand transition"
             aria-label="Back to showtimes"
           >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-            </svg>
+            <ChevronLeftIcon className="h-5 w-5" />
           </button>
           <div>
             <div className="flex items-center gap-2">
@@ -287,30 +368,15 @@ export function SeatMap({ show, onBack, onProceedToCheckout }: SeatMapProps) {
           </div>
         </div>
 
-        {/* Quick Ticket Count Selector */}
-        <div className="flex items-center gap-2 self-end sm:self-auto">
-          <span className="text-xs font-medium text-text-secondary">Tickets:</span>
-          <div className="flex items-center gap-1 bg-surface-elevated p-1 rounded-xl border border-border-subtle">
-            {[1, 2, 3, 4, 5, 6].map((num) => (
-              <button
-                key={num}
-                type="button"
-                onClick={() => {
-                  setTicketCount(num);
-                  if (selectedSeatIds.length > num) {
-                    setSelectedSeatIds((prev) => prev.slice(0, num));
-                  }
-                }}
-                className={`h-7 w-7 rounded-lg text-xs font-bold transition ${
-                  ticketCount === num
-                    ? 'bg-brand text-white shadow-xs'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-surface'
-                }`}
-              >
-                {num}
-              </button>
-            ))}
-          </div>
+        {/* Ticket Quantity Selector (1 to 20) */}
+        <div className="flex items-center self-end sm:self-auto">
+          <TicketQuantitySelector
+            quantity={ticketCount}
+            onChange={handleTicketCountChange}
+            min={1}
+            max={20}
+            label="Tickets"
+          />
         </div>
       </div>
 
@@ -319,7 +385,7 @@ export function SeatMap({ show, onBack, onProceedToCheckout }: SeatMapProps) {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand text-white shadow-xs">
-              ⚡
+              <SparklesIcon className="h-5 w-5" />
             </div>
             <div>
               <h3 className="text-sm font-bold text-text-primary flex items-center gap-2">
@@ -334,21 +400,35 @@ export function SeatMap({ show, onBack, onProceedToCheckout }: SeatMapProps) {
             </div>
           </div>
 
-          <button
-            type="button"
-            disabled={isRecommending}
-            onClick={handleRequestRecommendation}
-            className="flex items-center gap-2 rounded-xl bg-brand px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-brand-hover transition disabled:opacity-50"
-          >
-            {isRecommending ? (
-              <>
-                <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                Analyzing Layout...
-              </>
-            ) : (
-              <>✨ Recommend Best {ticketCount} Seats</>
-            )}
-          </button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={handleOpenAlternatives}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border-subtle bg-surface px-3.5 py-2 text-xs font-semibold text-text-primary hover:border-brand transition shadow-2xs"
+            >
+              <RefreshCwIcon className={`w-3.5 h-3.5 text-brand ${isLoadingAlternatives ? 'animate-spin' : ''}`} />
+              <span>{showAlternatives ? 'Hide Alternatives' : 'Compare Alternate Times'}</span>
+            </button>
+
+            <button
+              type="button"
+              disabled={isRecommending}
+              onClick={handleRequestRecommendation}
+              className="flex items-center gap-2 rounded-xl bg-brand px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-brand-hover transition disabled:opacity-50"
+            >
+              {isRecommending ? (
+                <>
+                  <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  Analyzing Layout...
+                </>
+              ) : (
+                <>
+                  <SparklesIcon className="h-4 w-4" />
+                  <span>Recommend Best {ticketCount} Seats</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         {recommendationMessage && (
@@ -357,21 +437,84 @@ export function SeatMap({ show, onBack, onProceedToCheckout }: SeatMapProps) {
             <button
               type="button"
               onClick={() => setRecommendationMessage(null)}
-              className="text-text-secondary hover:text-text-primary ml-2 text-sm font-bold"
+              className="text-text-secondary hover:text-text-primary ml-2 p-1"
+              aria-label="Dismiss recommendation message"
             >
-              ✕
+              <XIcon className="h-4 w-4" />
             </button>
+          </div>
+        )}
+
+        {/* Alternative Shows Panel if opened */}
+        {showAlternatives && (
+          <div className="mt-4 pt-3 border-t border-border-subtle">
+            <AlternativeShowFinder
+              currentShow={show}
+              alternatives={alternatives}
+              partySize={ticketCount}
+              onSelectAlternative={handleSelectAlternative}
+              onClose={() => setShowAlternatives(false)}
+            />
           </div>
         )}
       </div>
 
-      {/* Screen Representation */}
-      <div className="relative py-4 text-center">
-        <div className="mx-auto w-3/4 max-w-lg h-2 rounded-full bg-gradient-to-r from-transparent via-brand to-transparent shadow-[0_0_15px_var(--focus-ring)]" />
-        <span className="block mt-2 text-[10px] uppercase tracking-widest font-extrabold text-text-secondary">
-          All eyes this way • Screen
-        </span>
+      {/* 3D vs 2D View Switcher & Group Split Tool */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-surface-elevated border border-border-subtle">
+          <button
+            type="button"
+            onClick={() => setViewMode('3d')}
+            className={`px-3 py-1.5 text-xs font-bold rounded-xl transition shadow-2xs ${
+              viewMode === '3d'
+                ? 'bg-brand text-white'
+                : 'text-text-secondary hover:text-text-primary'
+            }`}
+          >
+            3D Auditorium View
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('2d')}
+            className={`px-3 py-1.5 text-xs font-bold rounded-xl transition shadow-2xs ${
+              viewMode === '2d'
+                ? 'bg-brand text-white'
+                : 'text-text-secondary hover:text-text-primary'
+            }`}
+          >
+            2D Seat Grid
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsGroupSplitOpen(true)}
+          className="inline-flex items-center gap-1.5 rounded-xl border border-border-subtle bg-surface px-3.5 py-1.5 text-xs font-bold text-text-primary hover:border-brand transition shadow-xs"
+        >
+          <span>Split Group Expenses</span>
+        </button>
       </div>
+
+      {viewMode === '3d' ? (
+        <Auditorium3D
+          seats={seatMapData.seats}
+          selectedSeatIds={selectedSeatIds}
+          onToggleSeat={(seatId) => {
+            const s = seatLookup.get(seatId);
+            if (s) handleToggleSeat(s);
+          }}
+          maxSeats={20}
+          onSwitchTo2D={() => setViewMode('2d')}
+        />
+      ) : (
+        <>
+          {/* Screen Representation */}
+          <div className="relative py-4 text-center">
+            <div className="mx-auto w-3/4 max-w-lg h-2 rounded-full bg-gradient-to-r from-transparent via-brand to-transparent shadow-[0_0_15px_var(--focus-ring)]" />
+            <span className="block mt-2 text-[10px] uppercase tracking-widest font-extrabold text-text-secondary">
+              All eyes this way • Screen
+            </span>
+          </div>
 
       {/* Interactive Seat Grid by Category */}
       <div className="flex flex-col gap-6 overflow-x-auto pb-4 pt-2">
@@ -472,6 +615,8 @@ export function SeatMap({ show, onBack, onProceedToCheckout }: SeatMapProps) {
           <span className="text-brand font-semibold">AI Recommended</span>
         </div>
       </div>
+      </>
+      )}
 
       {/* Bottom Sticky Action Drawer */}
       <div className="sticky bottom-4 z-30 rounded-3xl border border-border-subtle bg-surface/95 p-4 sm:p-5 shadow-xl backdrop-blur-xl transition-colors">
@@ -482,11 +627,18 @@ export function SeatMap({ show, onBack, onProceedToCheckout }: SeatMapProps) {
               <span className="text-xs font-bold uppercase tracking-wider text-text-secondary">
                 Selected Seats ({selectedSeats.length}/{ticketCount}):
               </span>
-              {selectedSeats.length === 0 && (
+              {selectedSeats.length === 0 ? (
                 <span className="text-xs text-text-secondary font-medium">
                   Please tap {ticketCount} seat{ticketCount > 1 ? 's' : ''} on the map above.
                 </span>
-              )}
+              ) : selectedSeats.length !== ticketCount ? (
+                <span className="text-xs font-bold text-brand flex items-center gap-1">
+                  <InfoIcon className="h-3.5 w-3.5" />
+                  {selectedSeats.length < ticketCount
+                    ? `Select ${ticketCount - selectedSeats.length} more seat${ticketCount - selectedSeats.length > 1 ? 's' : ''} to match your ticket quantity.`
+                    : `Remove ${selectedSeats.length - ticketCount} seat${selectedSeats.length - ticketCount > 1 ? 's' : ''} to match your ticket quantity.`}
+                </span>
+              ) : null}
             </div>
 
             <div className="flex flex-wrap items-center gap-2 min-h-[32px]">
@@ -505,10 +657,10 @@ export function SeatMap({ show, onBack, onProceedToCheckout }: SeatMapProps) {
                     <button
                       type="button"
                       onClick={() => handleToggleSeat(seat)}
-                      className="ml-1 text-text-secondary hover:text-brand font-black"
+                      className="ml-1 p-0.5 text-text-secondary hover:text-brand"
                       aria-label={`Remove seat ${seat.id}`}
                     >
-                      ×
+                      <XIcon className="h-3 w-3" />
                     </button>
                   </span>
                 ))
@@ -535,9 +687,9 @@ export function SeatMap({ show, onBack, onProceedToCheckout }: SeatMapProps) {
 
             <button
               type="button"
-              disabled={selectedSeats.length === 0 || isQuoteLoading}
+              disabled={selectedSeats.length === 0 || selectedSeats.length !== ticketCount || isQuoteLoading}
               onClick={() => {
-                if (quote && seatMapData && selectedSeats.length > 0) {
+                if (quote && seatMapData && selectedSeats.length === ticketCount) {
                   onProceedToCheckout({
                     show,
                     seatMap: seatMapData,
@@ -555,13 +707,27 @@ export function SeatMap({ show, onBack, onProceedToCheckout }: SeatMapProps) {
                 </>
               ) : selectedSeats.length === 0 ? (
                 `Select ${ticketCount} Seat${ticketCount > 1 ? 's' : ''}`
+              ) : selectedSeats.length !== ticketCount ? (
+                selectedSeats.length < ticketCount
+                  ? `Need ${ticketCount - selectedSeats.length} More Seat${ticketCount - selectedSeats.length > 1 ? 's' : ''}`
+                  : `Remove ${selectedSeats.length - ticketCount} Seat${selectedSeats.length - ticketCount > 1 ? 's' : ''}`
               ) : (
-                `Proceed to Checkout (${selectedSeats.length}) →`
+                `Proceed to Checkout (${selectedSeats.length} Tickets) →`
               )}
             </button>
           </div>
         </div>
       </div>
+
+      <GroupSplitDrawer
+        isOpen={isGroupSplitOpen}
+        onClose={() => setIsGroupSplitOpen(false)}
+        ticketCount={ticketCount}
+        totalPricePaise={quote?.totalPaise || (selectedSeats.length * show.ticketPricePaise)}
+        movieTitle={movie.title}
+        showTime={new Date(show.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        cinemaName={cinema.name}
+      />
     </div>
   );
 }

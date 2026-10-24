@@ -3,6 +3,7 @@
 import React from 'react';
 import { Movie } from '@/types';
 import { MovieCard } from './MovieCard';
+import { FilmIcon } from '@/components/icons';
 
 interface MovieGridProps {
   movies: Movie[];
@@ -73,8 +74,8 @@ export function MovieGrid({
   if (movies.length === 0) {
     return (
       <div className="my-16 flex flex-col items-center justify-center rounded-3xl border border-border-subtle bg-surface p-10 text-center shadow-sm">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-elevated text-3xl mb-4">
-          🎬
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-elevated text-brand mb-4">
+          <FilmIcon className="h-8 w-8" />
         </div>
         <h3 className="text-xl font-bold text-text-primary">No movies match your search</h3>
         <p className="mt-1.5 max-w-md text-sm text-text-secondary">

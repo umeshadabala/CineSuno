@@ -10,6 +10,14 @@ import {
   Booking,
 } from '@/types';
 import { apiClient } from '@/lib/api-client';
+import { useToast } from '@/lib/toast';
+import {
+  CheckIcon,
+  XIcon,
+  CalendarIcon,
+  ClockIcon,
+  InfoIcon,
+} from '@/components/icons';
 
 interface CheckoutModalProps {
   show: Show;
@@ -29,6 +37,7 @@ export function CheckoutModal({
   onBookingConfirmed,
 }: CheckoutModalProps) {
   const { movie, cinema } = seatMap;
+  const toast = useToast();
 
   // Customer form inputs
   const [customerName, setCustomerName] = useState<string>('');
@@ -39,8 +48,9 @@ export function CheckoutModal({
   const [checkoutStep, setCheckoutStep] = useState<'review' | 'processing' | 'confirmed' | 'error'>('review');
   const [confirmedBooking, setConfirmedBooking] = useState<Booking | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [posterError, setPosterError] = useState<boolean>(false);
 
-  const posterSrc = movie.poster.replace(/\.jpe?g$/i, '.svg');
+  const posterSrc = posterError ? '/posters/kalki.jpg' : movie.poster;
 
   // Format date and time
   const formattedShowDate = (() => {
@@ -95,8 +105,10 @@ export function CheckoutModal({
       });
 
       if (!bookingRes.success) {
-        setErrorMessage(bookingRes.error.message || 'Unable to hold selected seats.');
+        const msg = bookingRes.error.message || 'Unable to hold selected seats.';
+        setErrorMessage(msg);
         setCheckoutStep('error');
+        toast.error(msg);
         return;
       }
 
@@ -118,10 +130,21 @@ export function CheckoutModal({
 
       setConfirmedBooking(confirmed);
       setCheckoutStep('confirmed');
+      if (typeof window !== 'undefined') {
+        try {
+          const prev = JSON.parse(localStorage.getItem('cinesuno_bookings') || '[]');
+          localStorage.setItem('cinesuno_bookings', JSON.stringify([confirmed, ...prev]));
+        } catch {
+          // Ignore
+        }
+      }
+      toast.success(`Booking confirmed! Reference: ${confirmed.reference}`);
       if (onBookingConfirmed) onBookingConfirmed(confirmed);
     } catch {
-      setErrorMessage('Payment simulation failed. Please try again.');
+      const msg = 'Payment simulation failed. Please try again.';
+      setErrorMessage(msg);
       setCheckoutStep('error');
+      toast.error(msg);
     }
   };
 
@@ -148,9 +171,7 @@ export function CheckoutModal({
             aria-label="Close checkout"
             className="absolute right-5 top-5 rounded-full bg-surface-elevated p-2 text-text-secondary hover:text-text-primary hover:border-brand transition shadow-sm"
           >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <XIcon className="h-5 w-5" />
           </button>
         )}
 
@@ -158,9 +179,7 @@ export function CheckoutModal({
         {checkoutStep === 'confirmed' && confirmedBooking ? (
           <div className="flex flex-col items-center text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-surface-elevated text-brand mb-4">
-              <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
-              </svg>
+              <CheckIcon className="h-8 w-8" />
             </div>
 
             <span className="rounded-full bg-selected px-3 py-1 text-xs font-bold text-brand border border-border-subtle">
@@ -183,6 +202,7 @@ export function CheckoutModal({
                     alt={movie.title}
                     fill
                     unoptimized
+                    onError={() => setPosterError(true)}
                     className="object-cover"
                   />
                 </div>
@@ -190,10 +210,18 @@ export function CheckoutModal({
                 <div className="flex-1">
                   <h3 className="text-base font-extrabold text-text-primary">{movie.title}</h3>
                   <p className="text-xs font-medium text-text-secondary mt-0.5">{cinema.name}</p>
-                  <p className="text-xs text-text-secondary mt-1">
-                    {formattedShowDate} • {formattedShowTime}
-                  </p>
-                  <p className="text-xs text-text-secondary">
+                  <div className="text-xs text-text-secondary mt-1 flex items-center gap-1.5 flex-wrap">
+                    <span className="inline-flex items-center gap-1">
+                      <CalendarIcon className="h-3 w-3 text-text-secondary" />
+                      {formattedShowDate}
+                    </span>
+                    <span>•</span>
+                    <span className="inline-flex items-center gap-1">
+                      <ClockIcon className="h-3 w-3 text-text-secondary" />
+                      {formattedShowTime}
+                    </span>
+                  </div>
+                  <p className="text-xs text-text-secondary mt-0.5">
                     {show.screenName || 'Screen 1'} • {show.format || '2D'} • {show.language}
                   </p>
 
@@ -233,9 +261,10 @@ export function CheckoutModal({
               </div>
             </div>
 
-            <p className="mt-4 text-[11px] text-text-secondary leading-relaxed max-w-sm">
-              ⚡ CineSuno Bolna Buildathon Prototype: Simulated payment has succeeded and seats have been marked confirmed in the demo store.
-            </p>
+            <div className="mt-4 rounded-xl border border-border-subtle bg-surface p-3 text-[11px] text-text-secondary leading-relaxed max-w-sm flex items-center gap-2 text-left">
+              <InfoIcon className="h-4 w-4 text-brand shrink-0" />
+              <span>CineSuno Bolna Buildathon Prototype: Simulated payment confirmed and seats registered in memory.</span>
+            </div>
 
             <button
               type="button"
@@ -268,6 +297,7 @@ export function CheckoutModal({
                   alt={movie.title}
                   fill
                   unoptimized
+                  onError={() => setPosterError(true)}
                   className="object-cover"
                 />
               </div>
@@ -275,9 +305,17 @@ export function CheckoutModal({
               <div className="flex-1">
                 <h3 className="text-base font-bold text-text-primary">{movie.title}</h3>
                 <p className="text-xs text-text-secondary mt-0.5">{cinema.name}</p>
-                <p className="text-xs text-text-secondary mt-1">
-                  📅 {formattedShowDate} • ⏰ {formattedShowTime}
-                </p>
+                <div className="text-xs text-text-secondary mt-1 flex items-center gap-1.5 flex-wrap">
+                  <span className="inline-flex items-center gap-1">
+                    <CalendarIcon className="h-3 w-3 text-text-secondary" />
+                    {formattedShowDate}
+                  </span>
+                  <span>•</span>
+                  <span className="inline-flex items-center gap-1">
+                    <ClockIcon className="h-3 w-3 text-text-secondary" />
+                    {formattedShowTime}
+                  </span>
+                </div>
                 <div className="mt-2 flex items-center gap-1.5 flex-wrap">
                   <span className="rounded bg-surface px-1.5 py-0.5 text-[10px] font-bold text-text-primary border border-border-subtle">
                     {show.format || '2D'}
@@ -341,13 +379,13 @@ export function CheckoutModal({
                     key={method}
                     type="button"
                     onClick={() => setPaymentMethod(method)}
-                    className={`rounded-xl border py-2.5 text-xs font-bold transition ${
+                    className={`rounded-xl border py-2.5 px-3 text-xs font-bold transition flex items-center justify-center gap-1.5 ${
                       paymentMethod === method
                         ? 'border-brand bg-selected text-brand shadow-xs'
                         : 'border-border-subtle bg-surface text-text-secondary hover:text-text-primary hover:border-brand'
                     }`}
                   >
-                    {method === 'UPI' ? '⚡ UPI Instant' : method === 'CARD' ? '💳 Credit/Debit' : '🧪 Demo Token'}
+                    {method === 'UPI' ? 'UPI Instant' : method === 'CARD' ? 'Card (Credit/Debit)' : 'Demo Sandbox'}
                   </button>
                 ))}
               </div>
@@ -385,8 +423,9 @@ export function CheckoutModal({
             )}
 
             {/* Disclaimer banner */}
-            <div className="rounded-xl border border-border-subtle bg-surface p-3 text-[11px] text-text-secondary leading-relaxed">
-              💡 Prototype Reality: No real credit card or bank credentials will be charged. Clicking below verifies contract handling and places your demo booking in the authoritative in-memory store.
+            <div className="rounded-xl border border-border-subtle bg-surface-elevated p-3 text-[11px] text-text-secondary leading-relaxed flex items-start gap-2">
+              <InfoIcon className="h-4 w-4 text-brand shrink-0 mt-0.5" />
+              <span>Prototype Verification: No actual credit card or bank credentials are charged. Completing this order validates schema contracts and records your booking in the server-side demo state.</span>
             </div>
 
             {/* Action Buttons */}

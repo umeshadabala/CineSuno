@@ -14,7 +14,7 @@ export const MOCK_MOVIES: Movie[] = [
     certificate: 'UA',
     synopsis:
       'Set in a post-apocalyptic world in the year 2898 AD, a modern avatar of Vishnu descends to earth to protect the world from evil forces and herald a new golden era.',
-    poster: '/posters/kalki.svg',
+    poster: '/posters/kalki.jpg',
     status: 'now_showing',
     releaseDate: '2026-06-27',
     rating: 8.6,
@@ -28,7 +28,7 @@ export const MOCK_MOVIES: Movie[] = [
     certificate: 'UA',
     synopsis:
       'A prison warden orchestrates daring heists and vigilante justice to uncover systemic corruption, driven by a deep personal vendetta and a promise made years ago.',
-    poster: '/posters/jawan.svg',
+    poster: '/posters/jawan.jpg',
     status: 'now_showing',
     releaseDate: '2026-09-07',
     rating: 8.2,
@@ -42,7 +42,7 @@ export const MOCK_MOVIES: Movie[] = [
     certificate: 'UA',
     synopsis:
       'The town of Chanderi faces a terrifying new headless entity called Sarkata. Vicky and his eccentric friends must reunite with Stree to save the women of their village.',
-    poster: '/posters/stree2.svg',
+    poster: '/posters/stree2.jpg',
     status: 'now_showing',
     releaseDate: '2026-08-15',
     rating: 8.1,
@@ -56,7 +56,7 @@ export const MOCK_MOVIES: Movie[] = [
     certificate: 'UA',
     synopsis:
       'A humble barber arrives at a police station reporting the theft of Lakshmi—a steel trash can. As the police investigate, a dark, gripping tale of vengeance unravels.',
-    poster: '/posters/maharaja.svg',
+    poster: '/posters/maharaja.jpg',
     status: 'now_showing',
     releaseDate: '2026-06-14',
     rating: 8.8,
@@ -70,7 +70,7 @@ export const MOCK_MOVIES: Movie[] = [
     certificate: 'UA',
     synopsis:
       'The prequel exploring the divine origins of the Bhoota Kola deity and the ancient conflict between royal greed and indigenous forest lore in coastal Karnataka.',
-    poster: '/posters/kantara.svg',
+    poster: '/posters/kantara.jpg',
     status: 'coming_soon',
     releaseDate: '2026-11-14',
     rating: 9.1,
@@ -84,7 +84,7 @@ export const MOCK_MOVIES: Movie[] = [
     certificate: 'A',
     synopsis:
       'Pushpa Raj expands his red sandalwood syndicate across international waters while his clash with Bhanwar Singh Shekhawat escalates into an all-out war.',
-    poster: '/posters/pushpa2.svg',
+    poster: '/posters/pushpa2.jpg',
     status: 'coming_soon',
     releaseDate: '2026-12-06',
     rating: 8.9,
@@ -98,7 +98,7 @@ export const MOCK_MOVIES: Movie[] = [
     certificate: 'UA',
     synopsis:
       'Three engineering students in Bengaluru run into a local eccentric gangster named Ranga for protection from college bullies, turning their lives into utter chaos.',
-    poster: '/posters/aavesham.svg',
+    poster: '/posters/aavesham.jpg',
     status: 'now_showing',
     releaseDate: '2026-04-11',
     rating: 8.5,
@@ -112,7 +112,7 @@ export const MOCK_MOVIES: Movie[] = [
     certificate: 'U',
     synopsis:
       'A vacation in Kodaikanal takes a harrowing turn when one friend slips into the treacherous Guna Caves, triggering an extraordinary rescue driven by sheer brotherhood.',
-    poster: '/posters/manjummel.svg',
+    poster: '/posters/manjummel.jpg',
     status: 'now_showing',
     releaseDate: '2026-02-22',
     rating: 8.7,

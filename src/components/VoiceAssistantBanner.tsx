@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { MicIcon } from '@/components/icons';
 
 interface VoiceAssistantBannerProps {
   onSampleVoiceCommand: (query: string) => void;
@@ -72,7 +73,7 @@ export function VoiceAssistantBanner({
               onClick={() => simulateVoiceInput(cmd)}
               className="flex items-center gap-1.5 rounded-full border border-border-subtle bg-surface px-3 py-1.5 text-xs font-semibold text-text-primary transition hover:border-brand hover:bg-selected focus:outline-none focus:ring-2 focus:ring-brand active:scale-95 disabled:opacity-50"
             >
-              <span className="text-brand">🎙️</span>
+              <MicIcon className="h-3.5 w-3.5 text-brand" />
               <span>“{cmd}”</span>
             </button>
           ))}

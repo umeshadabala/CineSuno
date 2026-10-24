@@ -4,21 +4,25 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Movie, Show } from '@/types';
 import { ShowtimePicker } from './ShowtimePicker';
+import { StarIcon, XIcon, ChevronLeftIcon, ChevronRightIcon, MicIcon } from '@/components/icons';
 
 interface MovieDetailModalProps {
   movie: Movie | null;
   selectedCity?: string;
+  initialPartySize?: number;
   onClose: () => void;
-  onSelectShowtime?: (movie: Movie, show: Show) => void;
+  onSelectShowtime?: (movie: Movie, show: Show, partySize?: number) => void;
 }
 
 export function MovieDetailModal({
   movie,
   selectedCity = 'Bengaluru',
+  initialPartySize = 2,
   onClose,
   onSelectShowtime,
 }: MovieDetailModalProps) {
   const [viewMode, setViewMode] = useState<'details' | 'showtimes'>('details');
+  const [imageError, setImageError] = useState(false);
 
   const handleClose = React.useCallback(() => {
     setViewMode('details');
@@ -44,7 +48,11 @@ export function MovieDetailModal({
   const hours = Math.floor(movie.runtimeMinutes / 60);
   const minutes = movie.runtimeMinutes % 60;
   const formattedRuntime = `${hours} hr ${minutes} min`;
-  const posterSrc = movie.poster.replace(/\.jpe?g$/i, '.svg');
+
+  // Real promotional poster image source
+  const posterSrc = imageError
+    ? '/posters/kalki.jpg'
+    : movie.poster.replace(/\.svg$/i, '.jpg');
 
   return (
     <div
@@ -68,9 +76,7 @@ export function MovieDetailModal({
           aria-label="Close dialog"
           className="absolute right-4 top-4 z-20 rounded-full bg-surface-elevated/90 p-2 text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition shadow-sm"
         >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <XIcon className="w-5 h-5" />
         </button>
 
         {viewMode === 'showtimes' ? (
@@ -83,9 +89,7 @@ export function MovieDetailModal({
                 className="rounded-xl border border-border-subtle bg-surface-elevated p-2 text-text-secondary hover:text-text-primary transition"
                 aria-label="Back to movie details"
               >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-                </svg>
+                <ChevronLeftIcon className="w-5 h-5" />
               </button>
               <div>
                 <span className="text-xs font-bold text-brand uppercase tracking-wider">
@@ -103,9 +107,10 @@ export function MovieDetailModal({
             <ShowtimePicker
               movie={movie}
               selectedCity={selectedCity}
-              onSelectShow={(show) => {
+              initialPartySize={initialPartySize}
+              onSelectShow={(show, partySize) => {
                 if (onSelectShowtime) {
-                  onSelectShowtime(movie, show);
+                  onSelectShowtime(movie, show, partySize);
                 }
               }}
             />
@@ -122,6 +127,7 @@ export function MovieDetailModal({
                 unoptimized
                 className="object-cover"
                 sizes="(max-width: 640px) 100vw, 300px"
+                onError={() => setImageError(true)}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent sm:hidden" />
             </div>
@@ -135,7 +141,8 @@ export function MovieDetailModal({
                   </span>
                   {movie.rating && (
                     <span className="flex items-center gap-1 rounded-md border border-border-subtle bg-surface-elevated px-2 py-0.5 text-xs font-extrabold text-brand">
-                      ★ {movie.rating.toFixed(1)} / 10
+                      <StarIcon className="w-3.5 h-3.5 text-brand" />
+                      <span>{movie.rating.toFixed(1)} / 10</span>
                     </span>
                   )}
                   <span className="text-xs text-text-secondary">{formattedRuntime}</span>
@@ -191,9 +198,9 @@ export function MovieDetailModal({
               <div className="mt-6 pt-4 border-t border-border-subtle flex flex-col gap-3">
                 {/* Voice suggestion banner */}
                 <div className="flex items-center gap-2 rounded-xl border border-border-subtle bg-surface-elevated px-3 py-2 text-xs text-text-secondary">
-                  <span className="text-base text-brand">🎙️</span>
+                  <MicIcon className="w-4 h-4 text-brand shrink-0" />
                   <span>
-                    Say: <em className="text-text-primary font-semibold">“Book tickets for {movie.title} tonight”</em>
+                    Try asking: <strong className="text-text-primary font-semibold">&ldquo;Book tickets for {movie.title} tonight&rdquo;</strong>
                   </span>
                 </div>
 
@@ -205,9 +212,10 @@ export function MovieDetailModal({
                         setViewMode('showtimes');
                       }
                     }}
-                    className="flex-1 rounded-xl bg-brand py-3 text-center text-sm font-bold text-white shadow-sm transition hover:bg-brand-hover active:scale-95"
+                    className="flex-1 rounded-xl bg-brand py-3 text-center text-sm font-bold text-white shadow-sm transition hover:bg-brand-hover active:scale-95 flex items-center justify-center gap-1.5"
                   >
-                    {movie.status === 'now_showing' ? 'Select Showtimes →' : 'Notify on Release'}
+                    <span>{movie.status === 'now_showing' ? 'Select Showtimes' : 'Notify on Release'}</span>
+                    <ChevronRightIcon className="w-4 h-4" />
                   </button>
                   <button
                     type="button"

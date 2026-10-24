@@ -9,6 +9,7 @@ import { Header } from '@/components/Header';
 import { ShowtimePicker } from '@/components/ShowtimePicker';
 import { SeatMap } from '@/components/SeatMap';
 import { CheckoutModal } from '@/components/CheckoutModal';
+import { StarIcon } from '@/components/icons';
 
 function ShowsContent() {
   const searchParams = useSearchParams();
@@ -101,6 +102,7 @@ function ShowsContent() {
             show={activeShow}
             onBack={() => setActiveShow(null)}
             onProceedToCheckout={(data) => setCheckoutData(data)}
+            onSwitchShow={(newShow) => setActiveShow(newShow)}
           />
         ) : (
           <div className="rounded-3xl border border-border-subtle bg-surface p-6 sm:p-8 shadow-sm">
@@ -116,8 +118,9 @@ function ShowsContent() {
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="rounded-full bg-surface-elevated border border-border-subtle px-3 py-1 text-xs font-bold text-brand">
-                  ★ {movie.rating?.toFixed(1) || '8.5'} Rating
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-elevated border border-border-subtle px-3 py-1 text-xs font-bold text-brand">
+                  <StarIcon className="h-3.5 w-3.5 fill-brand text-brand" />
+                  <span>{movie.rating?.toFixed(1) || '8.5'} Rating</span>
                 </span>
               </div>
             </div>
