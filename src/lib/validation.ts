@@ -141,3 +141,148 @@ export function validateShowSearchParams(searchParams: URLSearchParams): Validat
     },
   };
 }
+
+const VALID_SEAT_ZONES = new Set(['front', 'middle', 'back']);
+const VALID_SEAT_CATEGORIES = new Set(['standard', 'premium', 'recliner']);
+
+/**
+ * Validates request body for POST /api/seats/recommend.
+ */
+export function validateSeatRecommendationRequest(body: unknown): ValidationResult<{
+  showId: string;
+  seatCount: number;
+  adjacentSeatsOnly?: boolean;
+  preferredZone?: 'front' | 'middle' | 'back';
+  preferredCategory?: 'standard' | 'premium' | 'recliner';
+  maxBudgetPaise?: number;
+}> {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return {
+      success: false,
+      error: {
+        code: 'INVALID_INPUT',
+        message: 'Request body must be a valid JSON object.',
+      },
+    };
+  }
+
+  const payload = body as Record<string, unknown>;
+
+  // Validate showId
+  if (!payload.showId || typeof payload.showId !== 'string' || payload.showId.trim() === '') {
+    return {
+      success: false,
+      error: {
+        code: 'INVALID_INPUT',
+        message: 'Field "showId" is required and must be a non-empty string.',
+        field: 'showId',
+      },
+    };
+  }
+  const showId = payload.showId.trim();
+
+  // Validate seatCount
+  if (
+    payload.seatCount === undefined ||
+    typeof payload.seatCount !== 'number' ||
+    !Number.isInteger(payload.seatCount) ||
+    payload.seatCount < 1 ||
+    payload.seatCount > 20
+  ) {
+    return {
+      success: false,
+      error: {
+        code: 'INVALID_TICKET_COUNT',
+        message: `Field "seatCount" must be an integer between 1 and 20. Received: ${payload.seatCount}`,
+        field: 'seatCount',
+      },
+    };
+  }
+  const seatCount = payload.seatCount;
+
+  // Validate adjacentSeatsOnly
+  let adjacentSeatsOnly: boolean | undefined = undefined;
+  if (payload.adjacentSeatsOnly !== undefined) {
+    if (typeof payload.adjacentSeatsOnly !== 'boolean') {
+      return {
+        success: false,
+        error: {
+          code: 'INVALID_INPUT',
+          message: 'Field "adjacentSeatsOnly" must be a boolean.',
+          field: 'adjacentSeatsOnly',
+        },
+      };
+    }
+    adjacentSeatsOnly = payload.adjacentSeatsOnly;
+  }
+
+  // Validate preferredZone
+  let preferredZone: ('front' | 'middle' | 'back') | undefined = undefined;
+  if (payload.preferredZone !== undefined) {
+    if (
+      typeof payload.preferredZone !== 'string' ||
+      !VALID_SEAT_ZONES.has(payload.preferredZone.toLowerCase())
+    ) {
+      return {
+        success: false,
+        error: {
+          code: 'INVALID_INPUT',
+          message: `Field "preferredZone" must be one of: ${Array.from(VALID_SEAT_ZONES).join(', ')}.`,
+          field: 'preferredZone',
+        },
+      };
+    }
+    preferredZone = payload.preferredZone.toLowerCase() as 'front' | 'middle' | 'back';
+  }
+
+  // Validate preferredCategory
+  let preferredCategory: ('standard' | 'premium' | 'recliner') | undefined = undefined;
+  if (payload.preferredCategory !== undefined) {
+    if (
+      typeof payload.preferredCategory !== 'string' ||
+      !VALID_SEAT_CATEGORIES.has(payload.preferredCategory.toLowerCase())
+    ) {
+      return {
+        success: false,
+        error: {
+          code: 'INVALID_INPUT',
+          message: `Field "preferredCategory" must be one of: ${Array.from(VALID_SEAT_CATEGORIES).join(', ')}.`,
+          field: 'preferredCategory',
+        },
+      };
+    }
+    preferredCategory = payload.preferredCategory.toLowerCase() as 'standard' | 'premium' | 'recliner';
+  }
+
+  // Validate maxBudgetPaise
+  let maxBudgetPaise: number | undefined = undefined;
+  if (payload.maxBudgetPaise !== undefined) {
+    if (
+      typeof payload.maxBudgetPaise !== 'number' ||
+      !Number.isInteger(payload.maxBudgetPaise) ||
+      payload.maxBudgetPaise <= 0
+    ) {
+      return {
+        success: false,
+        error: {
+          code: 'INVALID_INPUT',
+          message: 'Field "maxBudgetPaise" must be a positive integer in Indian paise.',
+          field: 'maxBudgetPaise',
+        },
+      };
+    }
+    maxBudgetPaise = payload.maxBudgetPaise;
+  }
+
+  return {
+    success: true,
+    data: {
+      showId,
+      seatCount,
+      adjacentSeatsOnly,
+      preferredZone,
+      preferredCategory,
+      maxBudgetPaise,
+    },
+  };
+}
