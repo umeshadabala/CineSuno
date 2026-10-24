@@ -1,0 +1,91 @@
+[
+  {
+    "id": "mov-01",
+    "title": "Kalki 2898 AD",
+    "languages": ["Telugu", "Hindi", "Tamil", "Kannada", "Malayalam"],
+    "genres": ["Action", "Sci-Fi"],
+    "runtimeMinutes": 180,
+    "certificate": "UA",
+    "synopsis": "Set in a post-apocalyptic world in the year 2898 AD, a modern avatar of Vishnu descends to Earth to protect humankind from dark forces.",
+    "poster": "/posters/kalki.jpg",
+    "status": "now_showing",
+    "releaseDate": "2026-06-27",
+    "rating": 8.4
+  },
+  {
+    "id": "mov-02",
+    "title": "Stree 2",
+    "languages": ["Hindi"],
+    "genres": ["Comedy", "Horror"],
+    "runtimeMinutes": 147,
+    "certificate": "UA",
+    "synopsis": "The town of Chanderi is haunted once again, this time by a headless entity named Sarkata. The original gang reunites with Stree to defeat the new terror.",
+    "poster": "/posters/stree2.jpg",
+    "status": "now_showing",
+    "releaseDate": "2026-08-15",
+    "rating": 7.8
+  },
+  {
+    "id": "mov-03",
+    "title": "Pushpa 2: The Rule",
+    "languages": ["Telugu", "Hindi", "Tamil", "Kannada", "Malayalam"],
+    "genres": ["Action", "Crime", "Thriller"],
+    "runtimeMinutes": 175,
+    "certificate": "A",
+    "synopsis": "Pushpa Raj expands his red sandalwood empire while confronting escalating rivalry from SP Bhanwar Singh Shekhawat in an explosive showdown.",
+    "poster": "/posters/pushpa2.jpg",
+    "status": "now_showing",
+    "releaseDate": "2026-12-05",
+    "rating": 8.6
+  },
+  {
+    "id": "mov-04",
+    "title": "Interstellar (IMAX Re-Release)",
+    "languages": ["English"],
+    "genres": ["Sci-Fi", "Adventure", "Drama"],
+    "runtimeMinutes": 169,
+    "certificate": "UA",
+    "synopsis": "When Earth becomes uninhabitable in the future, a farmer and ex-NASA pilot is tasked to pilot a spacecraft along with a team of researchers through a wormhole.",
+    "poster": "/posters/interstellar.jpg",
+    "status": "now_showing",
+    "releaseDate": "2026-10-01",
+    "rating": 8.9
+  },
+  {
+    "id": "mov-05",
+    "title": "Devara: Part 1",
+    "languages": ["Telugu", "Hindi", "Tamil"],
+    "genres": ["Action", "Drama"],
+    "runtimeMinutes": 178,
+    "certificate": "UA",
+    "synopsis": "An epic coastal saga where a fearless chieftain fights to protect his people and coastal waters from smuggling syndicates and betrayal.",
+    "poster": "/posters/devara.jpg",
+    "status": "now_showing",
+    "releaseDate": "2026-09-27",
+    "rating": 7.5
+  },
+  {
+    "id": "mov-06",
+    "title": "Toxic: A Fairy Tale for Grown-ups",
+    "languages": ["Kannada", "Hindi", "Telugu", "Tamil", "Malayalam"],
+    "genres": ["Action", "Thriller"],
+    "runtimeMinutes": 165,
+    "certificate": "A",
+    "synopsis": "A gritty, stylized crime drama exploring the dark corridors of the drug cartel underworld set against an international backdrop.",
+    "poster": "/posters/toxic.jpg",
+    "status": "coming_soon",
+    "releaseDate": "2026-11-20"
+  },
+  {
+    "id": "mov-07",
+    "title": "War 2",
+    "languages": ["Hindi", "Telugu", "Tamil"],
+    "genres": ["Action", "Thriller"],
+    "runtimeMinutes": 160,
+    "certificate": "UA",
+    "synopsis": "Major Kabir Dhaliwal crosses paths with a shadowy new operative across international terrain in the next chapter of the spy universe.",
+    "poster": "/posters/war2.jpg",
+    "status": "coming_soon",
+    "releaseDate": "2026-12-18"
+  }
+]
