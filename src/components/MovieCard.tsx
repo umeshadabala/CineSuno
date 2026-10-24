@@ -14,6 +14,8 @@ export function MovieCard({ movie, onSelect }: MovieCardProps) {
   const minutes = movie.runtimeMinutes % 60;
   const formattedRuntime = `${hours}h ${minutes}m`;
 
+  const posterSrc = movie.poster.replace(/\.jpe?g$/i, '.svg');
+
   return (
     <article
       tabIndex={0}
@@ -31,7 +33,7 @@ export function MovieCard({ movie, onSelect }: MovieCardProps) {
       {/* Poster Image Container */}
       <div className="relative aspect-[2/3] w-full overflow-hidden bg-zinc-950">
         <Image
-          src={movie.poster}
+          src={posterSrc}
           alt={`Official poster for ${movie.title}`}
           fill
           unoptimized
