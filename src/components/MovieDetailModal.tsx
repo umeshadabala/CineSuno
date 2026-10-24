@@ -78,6 +78,7 @@ export function MovieDetailModal({
               src={movie.poster}
               alt={movie.title}
               fill
+              unoptimized
               className="object-cover"
               sizes="(max-width: 640px) 100vw, 300px"
             />
