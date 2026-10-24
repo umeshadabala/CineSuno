@@ -1,13 +1,15 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Movie, MovieStatus } from '@/types';
+import { Movie, MovieStatus, Show, ShowSeatMapResponse, ShowSeat, PriceQuote } from '@/types';
 import { apiClient } from '@/lib/api-client';
 import { Header } from '@/components/Header';
 import { MovieFilterBar } from '@/components/MovieFilterBar';
 import { MovieGrid } from '@/components/MovieGrid';
 import { MovieDetailModal } from '@/components/MovieDetailModal';
 import { VoiceAssistantBanner } from '@/components/VoiceAssistantBanner';
+import { SeatMap } from '@/components/SeatMap';
+import { CheckoutModal } from '@/components/CheckoutModal';
 
 export default function HomePage() {
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -21,9 +23,23 @@ export default function HomePage() {
   const [selectedLanguage, setSelectedLanguage] = useState<string>('All');
   const [selectedGenre, setSelectedGenre] = useState<string>('All');
 
-  // Modal state
+  // Modal & Booking Flow states
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [refreshIndex, setRefreshIndex] = useState<number>(0);
+
+  // Active Show for Seat Selection
+  const [activeShow, setActiveShow] = useState<Show | null>(null);
+
+  // Active Checkout state
+  const [checkoutData, setCheckoutData] = useState<{
+    show: Show;
+    seatMap: ShowSeatMapResponse;
+    selectedSeats: ShowSeat[];
+    quote: PriceQuote;
+  } | null>(null);
+
+  // Success toast state
+  const [confirmedNotification, setConfirmedNotification] = useState<string | null>(null);
 
   // Fetch movies via apiClient
   useEffect(() => {
@@ -84,9 +100,10 @@ export default function HomePage() {
     setSelectedGenre('All');
   };
 
-  const handleSelectShowtime = (movie: Movie) => {
-    // Showtime discovery screen will be connected in Sprint 2 via /api/shows
-    void movie;
+  // Called when user selects a showtime from MovieDetailModal
+  const handleSelectShowtime = (_movie: Movie, show: Show) => {
+    setSelectedMovie(null);
+    setActiveShow(show);
   };
 
   return (
@@ -104,71 +121,119 @@ export default function HomePage() {
 
       {/* Main Content Area */}
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
-        {/* Voice Assistant Showcase Banner */}
-        <VoiceAssistantBanner onSampleVoiceCommand={handleVoiceCommand} />
-
-        {/* Hero Section */}
-        <section className="mb-6 rounded-3xl border border-zinc-800 bg-gradient-to-br from-zinc-900/90 via-zinc-900/40 to-zinc-950 p-6 sm:p-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-400">
-                <span>⚡ Bolna Symphony Buildathon Prototype</span>
-              </div>
-              <h1 className="mt-3 text-3xl sm:text-4xl font-black tracking-tight text-white">
-                Book Movies at the <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-amber-400 to-amber-200">Speed of Voice</span>
-              </h1>
-              <p className="mt-2 text-sm sm:text-base text-zinc-400 max-w-2xl leading-relaxed">
-                Discover blockbusters across India in Telugu, Hindi, Tamil, Kannada, and Malayalam. Converse with CineSuno to get intelligent seat recommendations and instant bookings.
-              </p>
+        {/* Success Booking Alert Banner */}
+        {confirmedNotification && (
+          <div className="mb-6 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-emerald-300 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-xl">🎟️</span>
+              <span className="text-sm font-semibold">{confirmedNotification}</span>
             </div>
-
-            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-4 text-center min-w-[140px]">
-                <span className="block text-2xl font-black text-rose-500">20</span>
-                <span className="text-xs text-zinc-400 font-medium">Tickets / Booking Max</span>
-              </div>
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-4 text-center min-w-[140px]">
-                <span className="block text-2xl font-black text-amber-400">₹5</span>
-                <span className="text-xs text-zinc-400 font-medium">Fee (Capped at ₹30)</span>
-              </div>
-            </div>
+            <button
+              type="button"
+              onClick={() => setConfirmedNotification(null)}
+              className="text-emerald-400 hover:text-white font-bold ml-4"
+            >
+              ✕
+            </button>
           </div>
-        </section>
+        )}
 
-        {/* Filter Controls Bar */}
-        <section aria-label="Movie filters">
-          <MovieFilterBar
-            statusFilter={statusFilter}
-            onStatusChange={setStatusFilter}
-            selectedLanguage={selectedLanguage}
-            onLanguageChange={setSelectedLanguage}
-            selectedGenre={selectedGenre}
-            onGenreChange={setSelectedGenre}
-            totalResults={movies.length}
-            onResetFilters={handleResetFilters}
-          />
-        </section>
+        {/* If Active Seat Map is selected, render Interactive Seat Selection View */}
+        {activeShow ? (
+          <section className="animate-in fade-in duration-300">
+            <SeatMap
+              show={activeShow}
+              onBack={() => setActiveShow(null)}
+              onProceedToCheckout={(data) => {
+                setCheckoutData(data);
+              }}
+            />
+          </section>
+        ) : (
+          <>
+            {/* Voice Assistant Showcase Banner */}
+            <VoiceAssistantBanner onSampleVoiceCommand={handleVoiceCommand} />
 
-        {/* Dynamic Movie Grid */}
-        <section aria-label="Movie catalogue" className="mt-4">
-          <MovieGrid
-            movies={movies}
-            isLoading={isLoading}
-            error={errorMessage}
-            onRetry={handleRetry}
-            onSelectMovie={(movie) => setSelectedMovie(movie)}
-            onResetFilters={handleResetFilters}
-          />
-        </section>
+            {/* Hero Section */}
+            <section className="mb-6 rounded-3xl border border-zinc-800 bg-gradient-to-br from-zinc-900/90 via-zinc-900/40 to-zinc-950 p-6 sm:p-8">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div>
+                  <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-400">
+                    <span>⚡ Bolna Symphony Buildathon Prototype</span>
+                  </div>
+                  <h1 className="mt-3 text-3xl sm:text-4xl font-black tracking-tight text-white">
+                    Book Movies at the <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-amber-400 to-amber-200">Speed of Voice</span>
+                  </h1>
+                  <p className="mt-2 text-sm sm:text-base text-zinc-400 max-w-2xl leading-relaxed">
+                    Discover blockbusters across India in Telugu, Hindi, Tamil, Kannada, and Malayalam. Select verified showtimes, explore real-time interactive seat availability, and simulate demo checkout.
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-4 text-center min-w-[140px]">
+                    <span className="block text-2xl font-black text-rose-500">20</span>
+                    <span className="text-xs text-zinc-400 font-medium">Tickets / Booking Max</span>
+                  </div>
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-4 text-center min-w-[140px]">
+                    <span className="block text-2xl font-black text-amber-400">₹5</span>
+                    <span className="text-xs text-zinc-400 font-medium">Fee (Capped at ₹30)</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Filter Controls Bar */}
+            <section aria-label="Movie filters">
+              <MovieFilterBar
+                statusFilter={statusFilter}
+                onStatusChange={setStatusFilter}
+                selectedLanguage={selectedLanguage}
+                onLanguageChange={setSelectedLanguage}
+                selectedGenre={selectedGenre}
+                onGenreChange={setSelectedGenre}
+                totalResults={movies.length}
+                onResetFilters={handleResetFilters}
+              />
+            </section>
+
+            {/* Dynamic Movie Grid */}
+            <section aria-label="Movie catalogue" className="mt-4">
+              <MovieGrid
+                movies={movies}
+                isLoading={isLoading}
+                error={errorMessage}
+                onRetry={handleRetry}
+                onSelectMovie={(movie) => setSelectedMovie(movie)}
+                onResetFilters={handleResetFilters}
+              />
+            </section>
+          </>
+        )}
       </main>
 
-      {/* Movie Details Modal */}
+      {/* Movie Details Modal with Showtime Selection */}
       <MovieDetailModal
         movie={selectedMovie}
         selectedCity={selectedCity}
         onClose={() => setSelectedMovie(null)}
         onSelectShowtime={handleSelectShowtime}
       />
+
+      {/* Checkout Modal */}
+      {checkoutData && (
+        <CheckoutModal
+          show={checkoutData.show}
+          seatMap={checkoutData.seatMap}
+          selectedSeats={checkoutData.selectedSeats}
+          quote={checkoutData.quote}
+          onClose={() => setCheckoutData(null)}
+          onBookingConfirmed={(booking) => {
+            setConfirmedNotification(
+              `Booking confirmed! Ref: ${booking.reference} for ${booking.movieTitle || 'your movie'}.`
+            );
+          }}
+        />
+      )}
 
       {/* Footer */}
       <footer className="mt-16 border-t border-zinc-900 bg-zinc-950 py-8 text-center text-xs text-zinc-500">
@@ -179,7 +244,7 @@ export default function HomePage() {
             <span>Voice-First Movie Ticketing Prototype</span>
           </div>
           <p className="text-zinc-600">
-            Built for Bolna Symphony Buildathon. Simulated catalogue & mock ticketing engine.
+            Built for Bolna Symphony Buildathon. Unified web and voice ticketing engine.
           </p>
         </div>
       </footer>

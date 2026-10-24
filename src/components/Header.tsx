@@ -4,19 +4,19 @@ import React from 'react';
 import Link from 'next/link';
 
 interface HeaderProps {
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
-  selectedCity: string;
-  onCityChange: (city: string) => void;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
+  selectedCity?: string;
+  onCityChange?: (city: string) => void;
   onVoiceClick?: () => void;
 }
 
 const CITIES = ['Bengaluru', 'Mumbai', 'Delhi-NCR', 'Hyderabad', 'Chennai', 'Kolkata'];
 
 export function Header({
-  searchQuery,
+  searchQuery = '',
   onSearchChange,
-  selectedCity,
+  selectedCity = 'Bengaluru',
   onCityChange,
   onVoiceClick,
 }: HeaderProps) {
@@ -69,7 +69,7 @@ export function Header({
               <select
                 aria-label="Select City"
                 value={selectedCity}
-                onChange={(e) => onCityChange(e.target.value)}
+                onChange={(e) => onCityChange?.(e.target.value)}
                 className="rounded-lg border border-zinc-800 bg-zinc-900 px-2.5 py-1.5 text-xs font-medium text-zinc-200 outline-none transition focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
               >
                 {CITIES.map((city) => (
@@ -107,13 +107,13 @@ export function Header({
             type="text"
             placeholder="Search movies by title, genre, or language (e.g. Kalki, Action, Telugu)..."
             value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
+            onChange={(e) => onSearchChange?.(e.target.value)}
             className="w-full rounded-xl border border-zinc-800 bg-zinc-900/90 py-2.5 pl-10 pr-10 text-sm text-zinc-100 placeholder-zinc-500 outline-none transition focus:border-rose-500 focus:bg-zinc-900 focus:ring-1 focus:ring-rose-500"
           />
           {searchQuery && (
             <button
               type="button"
-              onClick={() => onSearchChange('')}
+              onClick={() => onSearchChange?.('')}
               className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-zinc-400 hover:text-white"
               aria-label="Clear search"
             >
