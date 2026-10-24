@@ -107,8 +107,8 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans selection:bg-rose-600 selection:text-white">
-      {/* Global Navigation Header */}
+    <div className="min-h-screen bg-app-bg text-text-primary flex flex-col font-sans selection:bg-brand selection:text-white transition-colors">
+      {/* Global Navigation Header with Integrated Theme Toggle */}
       <Header
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -123,15 +123,16 @@ export default function HomePage() {
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
         {/* Success Booking Alert Banner */}
         {confirmedNotification && (
-          <div className="mb-6 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-emerald-300 flex items-center justify-between">
+          <div className="mb-6 rounded-2xl border border-border-subtle bg-selected p-4 text-brand flex items-center justify-between shadow-xs">
             <div className="flex items-center gap-3">
               <span className="text-xl">🎟️</span>
-              <span className="text-sm font-semibold">{confirmedNotification}</span>
+              <span className="text-sm font-semibold text-text-primary">{confirmedNotification}</span>
             </div>
             <button
               type="button"
               onClick={() => setConfirmedNotification(null)}
-              className="text-emerald-400 hover:text-white font-bold ml-4"
+              className="text-text-secondary hover:text-brand font-bold ml-4"
+              aria-label="Dismiss alert"
             >
               ✕
             </button>
@@ -154,29 +155,29 @@ export default function HomePage() {
             {/* Voice Assistant Showcase Banner */}
             <VoiceAssistantBanner onSampleVoiceCommand={handleVoiceCommand} />
 
-            {/* Hero Section */}
-            <section className="mb-6 rounded-3xl border border-zinc-800 bg-gradient-to-br from-zinc-900/90 via-zinc-900/40 to-zinc-950 p-6 sm:p-8">
+            {/* Hero Section with Monochromatic Branding */}
+            <section className="mb-6 rounded-3xl border border-border-subtle bg-surface p-6 sm:p-8 shadow-sm">
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 <div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-400">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-surface-elevated px-3 py-1 text-xs font-bold text-brand">
                     <span>⚡ Bolna Symphony Buildathon Prototype</span>
                   </div>
-                  <h1 className="mt-3 text-3xl sm:text-4xl font-black tracking-tight text-white">
-                    Book Movies at the <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-amber-400 to-amber-200">Speed of Voice</span>
+                  <h1 className="mt-3 text-3xl sm:text-4xl font-black tracking-tight text-text-primary">
+                    Book Movies at the <span className="text-brand">Speed of Voice</span>
                   </h1>
-                  <p className="mt-2 text-sm sm:text-base text-zinc-400 max-w-2xl leading-relaxed">
+                  <p className="mt-2 text-sm sm:text-base text-text-secondary max-w-2xl leading-relaxed">
                     Discover blockbusters across India in Telugu, Hindi, Tamil, Kannada, and Malayalam. Select verified showtimes, explore real-time interactive seat availability, and simulate demo checkout.
                   </p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-4 text-center min-w-[140px]">
-                    <span className="block text-2xl font-black text-rose-500">20</span>
-                    <span className="text-xs text-zinc-400 font-medium">Tickets / Booking Max</span>
+                  <div className="rounded-2xl border border-border-subtle bg-surface-elevated p-4 text-center min-w-[140px] shadow-xs">
+                    <span className="block text-2xl font-black text-brand">20</span>
+                    <span className="text-xs text-text-secondary font-medium">Tickets / Booking Max</span>
                   </div>
-                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-4 text-center min-w-[140px]">
-                    <span className="block text-2xl font-black text-amber-400">₹5</span>
-                    <span className="text-xs text-zinc-400 font-medium">Fee (Capped at ₹30)</span>
+                  <div className="rounded-2xl border border-border-subtle bg-surface-elevated p-4 text-center min-w-[140px] shadow-xs">
+                    <span className="block text-2xl font-black text-brand">₹5</span>
+                    <span className="text-xs text-text-secondary font-medium">Fee (Capped at ₹30)</span>
                   </div>
                 </div>
               </div>
@@ -236,15 +237,15 @@ export default function HomePage() {
       )}
 
       {/* Footer */}
-      <footer className="mt-16 border-t border-zinc-900 bg-zinc-950 py-8 text-center text-xs text-zinc-500">
+      <footer className="mt-16 border-t border-border-subtle bg-surface py-8 text-center text-xs text-text-secondary">
         <div className="mx-auto max-w-7xl px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-zinc-300">CineSuno</span>
+            <span className="font-bold text-text-primary">CineSuno</span>
             <span>•</span>
             <span>Voice-First Movie Ticketing Prototype</span>
           </div>
-          <p className="text-zinc-600">
-            Built for Bolna Symphony Buildathon. Unified web and voice ticketing engine.
+          <p className="text-text-secondary">
+            Built for Bolna Symphony Buildathon. Monochromatic Green Design System.
           </p>
         </div>
       </footer>

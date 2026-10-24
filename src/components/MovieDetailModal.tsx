@@ -56,17 +56,17 @@ export function MovieDetailModal({
       {/* Backdrop */}
       <div
         onClick={handleClose}
-        className="fixed inset-0 bg-black/80 backdrop-blur-md transition-opacity"
+        className="fixed inset-0 bg-black/70 backdrop-blur-md transition-opacity"
       />
 
       {/* Modal Dialog Content */}
-      <div className="relative z-10 w-full max-w-3xl overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 shadow-2xl shadow-rose-950/40">
+      <div className="relative z-10 w-full max-w-3xl overflow-hidden rounded-3xl border border-border-subtle bg-surface shadow-2xl transition-colors">
         {/* Close Button */}
         <button
           type="button"
           onClick={handleClose}
           aria-label="Close dialog"
-          className="absolute right-4 top-4 z-20 rounded-full bg-zinc-900/80 p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
+          className="absolute right-4 top-4 z-20 rounded-full bg-surface-elevated/90 p-2 text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition shadow-sm"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -80,7 +80,7 @@ export function MovieDetailModal({
               <button
                 type="button"
                 onClick={() => setViewMode('details')}
-                className="rounded-xl border border-zinc-800 bg-zinc-900 p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
+                className="rounded-xl border border-border-subtle bg-surface-elevated p-2 text-text-secondary hover:text-text-primary transition"
                 aria-label="Back to movie details"
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -88,13 +88,13 @@ export function MovieDetailModal({
                 </svg>
               </button>
               <div>
-                <span className="text-xs font-bold text-rose-500 uppercase tracking-wider">
+                <span className="text-xs font-bold text-brand uppercase tracking-wider">
                   Showtime Selection
                 </span>
-                <h2 id="movie-modal-title" className="text-2xl font-black text-white">
+                <h2 id="movie-modal-title" className="text-2xl font-black text-text-primary">
                   {movie.title}
                 </h2>
-                <p className="text-xs text-zinc-400">
+                <p className="text-xs text-text-secondary">
                   {selectedCity} • {movie.certificate} • {formattedRuntime}
                 </p>
               </div>
@@ -114,7 +114,7 @@ export function MovieDetailModal({
           /* Movie Details View */
           <div className="flex flex-col sm:flex-row max-h-[85vh] overflow-y-auto">
             {/* Poster Section */}
-            <div className="relative aspect-[2/3] w-full sm:w-2/5 shrink-0 bg-zinc-900">
+            <div className="relative aspect-[2/3] w-full sm:w-2/5 shrink-0 bg-surface-elevated">
               <Image
                 src={posterSrc}
                 alt={movie.title}
@@ -123,25 +123,25 @@ export function MovieDetailModal({
                 className="object-cover"
                 sizes="(max-width: 640px) 100vw, 300px"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent sm:hidden" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent sm:hidden" />
             </div>
 
             {/* Details Section */}
             <div className="flex flex-1 flex-col justify-between p-6 sm:p-8">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="rounded-md border border-zinc-700 bg-zinc-900 px-2.5 py-0.5 text-xs font-bold text-zinc-200">
+                  <span className="rounded-md border border-border-subtle bg-surface-elevated px-2.5 py-0.5 text-xs font-bold text-text-primary">
                     {movie.certificate}
                   </span>
                   {movie.rating && (
-                    <span className="flex items-center gap-1 rounded-md bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 text-xs font-extrabold text-amber-400">
+                    <span className="flex items-center gap-1 rounded-md border border-border-subtle bg-surface-elevated px-2 py-0.5 text-xs font-extrabold text-brand">
                       ★ {movie.rating.toFixed(1)} / 10
                     </span>
                   )}
-                  <span className="text-xs text-zinc-400">{formattedRuntime}</span>
+                  <span className="text-xs text-text-secondary">{formattedRuntime}</span>
                 </div>
 
-                <h2 id="movie-modal-title" className="mt-2 text-2xl font-black text-white">
+                <h2 id="movie-modal-title" className="mt-2 text-2xl font-black text-text-primary">
                   {movie.title}
                 </h2>
 
@@ -150,7 +150,7 @@ export function MovieDetailModal({
                   {movie.genres.map((genre) => (
                     <span
                       key={genre}
-                      className="rounded-full bg-zinc-800 px-2.5 py-0.5 text-xs font-medium text-zinc-300"
+                      className="rounded-full bg-surface-elevated px-2.5 py-0.5 text-xs font-medium text-text-secondary"
                     >
                       {genre}
                     </span>
@@ -159,12 +159,12 @@ export function MovieDetailModal({
 
                 {/* Languages */}
                 <div className="mt-4">
-                  <span className="text-xs font-semibold text-zinc-400">Languages:</span>
+                  <span className="text-xs font-semibold text-text-secondary">Languages:</span>
                   <div className="mt-1 flex flex-wrap gap-1.5">
                     {movie.languages.map((lang) => (
                       <span
                         key={lang}
-                        className="rounded-md border border-zinc-800 bg-zinc-900 px-2 py-0.5 text-xs font-medium text-rose-400"
+                        className="rounded-md border border-border-subtle bg-selected px-2 py-0.5 text-xs font-semibold text-brand"
                       >
                         {lang}
                       </span>
@@ -174,26 +174,26 @@ export function MovieDetailModal({
 
                 {/* Synopsis */}
                 <div className="mt-4">
-                  <span className="text-xs font-semibold text-zinc-400">Synopsis:</span>
-                  <p className="mt-1 text-sm leading-relaxed text-zinc-300">
+                  <span className="text-xs font-semibold text-text-secondary">Synopsis:</span>
+                  <p className="mt-1 text-sm leading-relaxed text-text-secondary">
                     {movie.synopsis}
                   </p>
                 </div>
 
                 {movie.releaseDate && (
-                  <div className="mt-4 text-xs text-zinc-500">
-                    Release Date: <span className="text-zinc-300 font-medium">{movie.releaseDate}</span>
+                  <div className="mt-4 text-xs text-text-secondary">
+                    Release Date: <span className="text-text-primary font-medium">{movie.releaseDate}</span>
                   </div>
                 )}
               </div>
 
               {/* Actions & Voice Prompts */}
-              <div className="mt-6 pt-4 border-t border-zinc-800 flex flex-col gap-3">
+              <div className="mt-6 pt-4 border-t border-border-subtle flex flex-col gap-3">
                 {/* Voice suggestion banner */}
-                <div className="flex items-center gap-2 rounded-xl border border-rose-500/20 bg-rose-950/20 px-3 py-2 text-xs text-rose-300">
-                  <span className="text-base">🎙️</span>
+                <div className="flex items-center gap-2 rounded-xl border border-border-subtle bg-surface-elevated px-3 py-2 text-xs text-text-secondary">
+                  <span className="text-base text-brand">🎙️</span>
                   <span>
-                    Say: <em className="text-white">“Book tickets for {movie.title} tonight”</em>
+                    Say: <em className="text-text-primary font-semibold">“Book tickets for {movie.title} tonight”</em>
                   </span>
                 </div>
 
@@ -205,14 +205,14 @@ export function MovieDetailModal({
                         setViewMode('showtimes');
                       }
                     }}
-                    className="flex-1 rounded-xl bg-gradient-to-r from-rose-600 to-amber-600 py-3 text-center text-sm font-bold text-white shadow-lg shadow-rose-950/40 transition hover:brightness-110 active:scale-95"
+                    className="flex-1 rounded-xl bg-brand py-3 text-center text-sm font-bold text-white shadow-sm transition hover:bg-brand-hover active:scale-95"
                   >
                     {movie.status === 'now_showing' ? 'Select Showtimes →' : 'Notify on Release'}
                   </button>
                   <button
                     type="button"
                     onClick={handleClose}
-                    className="rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm font-semibold text-zinc-300 hover:bg-zinc-800 transition"
+                    className="rounded-xl border border-border-subtle bg-surface px-4 py-3 text-sm font-semibold text-text-primary hover:bg-surface-elevated transition"
                   >
                     Close
                   </button>

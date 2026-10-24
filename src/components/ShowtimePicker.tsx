@@ -88,8 +88,8 @@ export function ShowtimePicker({
   return (
     <div className="flex flex-col gap-6">
       {/* Date Filter Tabs */}
-      <div className="flex items-center gap-3 overflow-x-auto pb-2 border-b border-zinc-800">
-        <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider shrink-0 mr-2">
+      <div className="flex items-center gap-3 overflow-x-auto pb-2 border-b border-border-subtle">
+        <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider shrink-0 mr-2">
           Select Date:
         </span>
         {dates.map((d) => {
@@ -101,8 +101,8 @@ export function ShowtimePicker({
               onClick={() => setSelectedDate(d.value)}
               className={`flex flex-col items-center justify-center min-w-[80px] rounded-xl px-4 py-2 transition-all ${
                 isSelected
-                  ? 'bg-rose-600 text-white shadow-lg shadow-rose-600/30 font-bold'
-                  : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
+                  ? 'bg-brand text-white shadow-sm font-bold'
+                  : 'border border-border-subtle bg-surface text-text-secondary hover:border-brand hover:text-text-primary'
               }`}
             >
               <span className="text-xs uppercase font-medium">{d.label}</span>
@@ -114,38 +114,38 @@ export function ShowtimePicker({
 
       {/* Shows Listing */}
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-12 gap-3 text-zinc-400">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-rose-500 border-t-transparent" />
+        <div className="flex flex-col items-center justify-center py-12 gap-3 text-text-secondary">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand border-t-transparent" />
           <p className="text-sm">Fetching verified showtimes from cinema partner...</p>
         </div>
       ) : error ? (
-        <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-6 text-center text-red-300">
-          <p className="font-semibold">{error}</p>
+        <div className="rounded-2xl border border-border-subtle bg-surface p-6 text-center text-text-secondary">
+          <p className="font-semibold text-text-primary">{error}</p>
           <button
             type="button"
             onClick={() => setSelectedDate(selectedDate)}
-            className="mt-3 rounded-lg bg-red-600/80 px-4 py-1.5 text-xs font-bold text-white hover:bg-red-600"
+            className="mt-3 rounded-lg bg-brand px-4 py-1.5 text-xs font-bold text-white hover:bg-brand-hover shadow-xs"
           >
             Retry
           </button>
         </div>
       ) : shows.length === 0 ? (
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-8 text-center text-zinc-400">
-          <p className="text-base font-semibold text-zinc-300">No showtimes available for this date.</p>
-          <p className="mt-1 text-xs text-zinc-500">
+        <div className="rounded-2xl border border-border-subtle bg-surface p-8 text-center text-text-secondary">
+          <p className="text-base font-semibold text-text-primary">No showtimes available for this date.</p>
+          <p className="mt-1 text-xs text-text-secondary">
             Please select another date above or explore other cinemas.
           </p>
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between text-xs text-zinc-400">
+          <div className="flex items-center justify-between text-xs text-text-secondary">
             <span>Available showtimes ({shows.length})</span>
             <span className="flex items-center gap-3">
               <span className="inline-flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-emerald-400" /> Available
+                <span className="h-2 w-2 rounded-full bg-brand" /> Available
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-amber-400" /> Filling Fast
+                <span className="h-2 w-2 rounded-full bg-text-secondary" /> Filling Fast
               </span>
             </span>
           </div>
@@ -164,47 +164,47 @@ export function ShowtimePicker({
                   onClick={() => onSelectShow(show)}
                   className={`group relative flex flex-col justify-between rounded-2xl border p-4 text-left transition-all ${
                     isSoldOut
-                      ? 'border-zinc-800/50 bg-zinc-950 opacity-40 cursor-not-allowed'
-                      : 'border-zinc-800 bg-zinc-900/70 hover:border-rose-500 hover:bg-zinc-900 hover:shadow-xl hover:shadow-rose-950/20'
+                      ? 'border-border-subtle bg-surface-elevated/40 opacity-40 cursor-not-allowed'
+                      : 'border-border-subtle bg-surface hover:border-brand hover:shadow-md'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-lg font-bold text-white group-hover:text-rose-400 transition">
+                        <span className="text-lg font-bold text-text-primary group-hover:text-brand transition-colors">
                           {formatTime(show.startTime)}
                         </span>
-                        <span className="rounded bg-zinc-800 px-2 py-0.5 text-[10px] font-semibold text-zinc-300">
+                        <span className="rounded bg-surface-elevated px-2 py-0.5 text-[10px] font-semibold text-text-secondary">
                           {show.format || '2D'}
                         </span>
                         {show.language && (
-                          <span className="rounded bg-zinc-800/80 px-2 py-0.5 text-[10px] font-medium text-zinc-400">
+                          <span className="rounded bg-surface-elevated px-2 py-0.5 text-[10px] font-medium text-text-secondary">
                             {show.language}
                           </span>
                         )}
                       </div>
-                      <p className="mt-1 text-xs text-zinc-400">{show.screenName || 'Screen 1'}</p>
+                      <p className="mt-1 text-xs text-text-secondary">{show.screenName || 'Screen 1'}</p>
                     </div>
 
                     <div className="text-right">
-                      <span className="text-base font-extrabold text-white">₹{priceRupees}</span>
-                      <span className="block text-[10px] text-zinc-500">Base ticket</span>
+                      <span className="text-base font-extrabold text-text-primary">₹{priceRupees}</span>
+                      <span className="block text-[10px] text-text-secondary">Base ticket</span>
                     </div>
                   </div>
 
-                  <div className="mt-3 flex items-center justify-between pt-2 border-t border-zinc-800/80 text-[11px]">
+                  <div className="mt-3 flex items-center justify-between pt-2 border-t border-border-subtle text-[11px]">
                     <span
                       className={`font-semibold ${
                         isSoldOut
-                          ? 'text-red-400'
+                          ? 'text-text-secondary line-through'
                           : isFillingFast
-                          ? 'text-amber-400'
-                          : 'text-emerald-400'
+                          ? 'text-text-primary underline decoration-brand'
+                          : 'text-brand'
                       }`}
                     >
                       {isSoldOut ? 'Sold Out' : isFillingFast ? 'Filling Fast' : 'Available'}
                     </span>
-                    <span className="font-semibold text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                    <span className="font-semibold text-brand opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
                       Select Seats →
                     </span>
                   </div>
